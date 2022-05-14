@@ -1,4 +1,5 @@
 import os
+from discord import Intents
 from discord.ext.commands import Bot
 if os.path.exists('pro.mode'):
     import secret.secret_pro as secret
@@ -11,14 +12,14 @@ class DiscordBot():
     def __init__(self, is_debug: bool = False):
         
         self.bot = Bot(command_prefix = const.COMMAND_PREFIX, 
-            # intents = self.create_intents(),
+            intents = self.create_intents(),
             enable_debug_events = is_debug)
         
-    # def create_intents(self) -> Intents:
-    #     intents = Intents.all()
-    #     intents.typing = False
-    #     intents.presences = False
-    #     return intents
+    def create_intents(self) -> Intents:
+        intents = Intents.all()
+        intents.typing = False
+        intents.presences = False
+        return intents
 
     def start(self):
         for name in const.HOOL_MODULES_FIXED:
