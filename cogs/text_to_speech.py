@@ -20,6 +20,8 @@ class Patchnote(Cog):
         self.voice_controller = VoiceClientController()
         self.url = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize'
         self.set_gcp_info()
+        self.use_ogg = True
+        self.audio_dir = './audio'
 
     def set_gcp_info(self):
         self.gcp_token = self.get_gcp_token()
@@ -79,7 +81,8 @@ class Patchnote(Cog):
         if speech_data == None:
             LogUtility.print('データが不正なため読み上げ終了')
             return
-        self.voice_controller.send_audio_packet(speech_data, True)
+        filename = self.write_audiofile(speech_data)
+        self.voice_controller.play(filename)
 
     async def request_text_to_speech(self, message: Message) -> Union[bytes, None]:
         async with aiohttp.ClientSession() as session:
@@ -97,7 +100,7 @@ class Patchnote(Cog):
         LogUtility.print(f'{text} {speed} {pitch}')
         payload = {
             "audioConfig": {
-                "audioEncoding": "OGG_OPUS",
+                "audioEncoding": "OGG_OPUS" if self.use_ogg else "LINEAR16",
                 "pitch": pitch,
                 "speakingRate": speed
             },
@@ -112,6 +115,20 @@ class Patchnote(Cog):
 
         return json.dumps(payload, ensure_ascii=False)
 
+    def write_audiofile(self, data: bytes) -> str:
+        """オーディオファイルを出力
+
+        Args:
+            data (bytes): 音声データ
+
+        Returns:
+            str: オーディオファイルパス
+        """
+        ext = 'ogg' if self.use_ogg else 'wav'
+        filename = f'{self.audio_dir}/audio.{ext}'
+        with open(filename, "wb") as file:
+            file.write(data)
+        return filename
 
 def setup(bot: Client):
     return bot.add_cog(Patchnote(bot))

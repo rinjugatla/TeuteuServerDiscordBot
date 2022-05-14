@@ -1,6 +1,7 @@
 from typing import Union
 
 from discord import VoiceClient
+from discord.player import FFmpegPCMAudio
 from models.voice_client_model import VoiceClientModel
 
 
@@ -10,6 +11,14 @@ class VoiceClientController(VoiceClientModel):
 
     def update(self, client: VoiceClient):
         self.voice_client = client
+
+    def play(self, filename: str):
+        if not self.is_connected:
+            return
+        if filename is None or len(filename) == 0:
+            return
+        
+        self.voice_client.play(FFmpegPCMAudio(filename))
 
     def send_audio_packet(self, data: bytes, encode: bool):
         if not self.is_connected:
