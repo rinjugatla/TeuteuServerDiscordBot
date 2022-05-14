@@ -76,6 +76,9 @@ class Patchnote(Cog):
             return
 
         speech_data = await self.request_text_to_speech(message)
+        if speech_data == None:
+            LogUtility.print('データが不正なため読み上げ終了')
+            return
         self.voice_controller.send_audio_packet(speech_data, True)
 
     async def request_text_to_speech(self, message: Message) -> Union[bytes, None]:
