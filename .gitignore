@@ -2,3 +2,4 @@ memo
 secret
 venv
 __pycache__
+audio/*
