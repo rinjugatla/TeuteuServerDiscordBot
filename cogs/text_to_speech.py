@@ -58,8 +58,8 @@ class TextToSpeech(Cog):
         is_valid = (message.author.id != self.bot.user.id)
         return is_valid
 
-    @commands.command(name='jo')
-    async def command_join(self, context: Context):
+    @commands.command(name='con')
+    async def command_connect(self, context: Context):
         message = context.message
         if not self.is_valid_command(message):
             return
