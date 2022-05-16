@@ -88,6 +88,9 @@ class TextToSpeech(Cog):
         if self.voice_controller is None:
             await self.init_audio_controller()
 
+        if not self.voice_controller.is_connected:
+            return
+
         text = message.content
         filepath = self.audio_controller.load_audio(text)
         if not filepath is None:
