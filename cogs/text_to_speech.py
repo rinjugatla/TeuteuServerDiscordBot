@@ -15,7 +15,7 @@ else:
     import secret.const_dev as const
 
 
-class Patchnote(Cog):
+class TextToSpeech(Cog):
     def __init__(self, bot: Client):
         self.bot = bot
         self.use_ogg = True
@@ -138,4 +138,4 @@ class Patchnote(Cog):
         return json.dumps(payload, ensure_ascii=False)
 
 def setup(bot: Client):
-    return bot.add_cog(Patchnote(bot))
+    return bot.add_cog(TextToSpeech(bot))
