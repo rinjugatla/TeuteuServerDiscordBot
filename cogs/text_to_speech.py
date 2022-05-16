@@ -1,6 +1,6 @@
 from typing import Union
 import google.auth, google.auth.transport.requests
-import os, json, aiohttp, base64
+import os, json, aiohttp, base64, re
 from controls.audio_management_contoller import AudioManagementController
 from controls.voice_client_controller import VoiceClientController
 from utilities.log import LogUtility
@@ -108,7 +108,8 @@ class TextToSpeech(Cog):
     async def request_text_to_speech(self, text: str) -> Union[bytes, None]:
         LogUtility.print(f'[GCP]音声データを取得 {self.create_text_preview(text)}')
         async with aiohttp.ClientSession() as session:
-            payload_json = self.create_payload(text)
+            validated_text= self.validate_text(text)
+            payload_json = self.create_payload(validated_text)
             async with session.post(url=self.url, data=payload_json, headers=self.gcp_headers) as response:
                 if response.status != 200:
                     return None
@@ -139,6 +140,15 @@ class TextToSpeech(Cog):
         }
 
         return json.dumps(payload, ensure_ascii=False)
+
+    def validate_text(self, text: str) -> str:
+        validated = self.replace_url(text)
+        return validated
+
+    def replace_url(self, text: str) -> str:
+        pattern = r'[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)'
+        replaced = re.sub(pattern, 'URL', text)
+        return replaced
 
 def setup(bot: Client):
     return bot.add_cog(TextToSpeech(bot))
