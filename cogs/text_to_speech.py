@@ -67,6 +67,10 @@ class TextToSpeech(Cog):
         if context.author.voice == None:
             await message.channel.send('ボイスチャンネルに接続して使用してください。')
             return
+        if self.voice_controller.is_connected:
+            await message.channel.send('すでにVCに参加済みです。')
+            return
+        
         voice_client = await context.author.voice.channel.connect()
         if self.voice_controller is None:
             await self.init_audio_controller()
