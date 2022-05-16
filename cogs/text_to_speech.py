@@ -102,6 +102,8 @@ class TextToSpeech(Cog):
             await self.voice_controller.append_audio(filepath)
             return
 
+        LogUtility.print_green(f'attachments: {len(message.attachments)} mentions: {message.mentions} url: {message.jump_url}')
+
         speech_data = await self.request_text_to_speech(text)
         if speech_data == None:
             LogUtility.print('データが不正なため読み上げ終了')
@@ -110,17 +112,19 @@ class TextToSpeech(Cog):
         await self.voice_controller.append_audio(filepath)
 
     async def request_text_to_speech(self, text: str) -> Union[bytes, None]:
-        LogUtility.print(f'[GCP]音声データを取得 {self.create_text_preview(text)}')
+        LogUtility.print_green(f'[GCP]音声データを取得 {text}')
         async with aiohttp.ClientSession() as session:
             validated_text= self.validate_text(text)
             payload_json = self.create_payload(validated_text)
             async with session.post(url=self.url, data=payload_json, headers=self.gcp_headers) as response:
                 if response.status != 200:
+                    LogUtility.print_red(f'GCP error response {response}')
                     return None
 
                 data = await response.json()
                 if 'audioContent' in data:
                     return base64.b64decode(data['audioContent'])
+                LogUtility.print_red(f'audioContent not found {data}')
                 return None
 
     def create_text_preview(self, text: str) -> str:
@@ -147,6 +151,7 @@ class TextToSpeech(Cog):
 
     def validate_text(self, text: str) -> str:
         validated = self.replace_url(text)
+        LogUtility.print(f'validate_text: {validated}')
         return validated
 
     def replace_url(self, text: str) -> str:
