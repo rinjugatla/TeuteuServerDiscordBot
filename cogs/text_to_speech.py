@@ -1,6 +1,7 @@
 from typing import Union
 import google.auth, google.auth.transport.requests
 import os, json, aiohttp, base64
+from controls.audio_management_contoller import AudioManagementController
 from controls.voice_client_controller import VoiceClientController
 from utilities.log import LogUtility
 from discord import Client, Message
@@ -17,11 +18,11 @@ else:
 class Patchnote(Cog):
     def __init__(self, bot: Client):
         self.bot = bot
-        self.voice_controller = VoiceClientController()
+        self.use_ogg = True
+        self.voice_controller = None
+        self.audio_controller = AudioManagementController(use_ogg=self.use_ogg)
         self.url = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize'
         self.set_gcp_info()
-        self.use_ogg = True
-        self.audio_dir = './audio'
 
     def set_gcp_info(self):
         self.gcp_token = self.get_gcp_token()
@@ -43,10 +44,13 @@ class Patchnote(Cog):
         token = creds.token
         return token
 
+    async def init_audio_controller(self):
+        self.voice_controller = VoiceClientController()
+
     def is_valid(self, message: Message):
-        if message.author.id == self.bot.user.id:
+        if message.author.bot:
             return False
-        if message.content[0] == const.COMMAND_PREFIX:
+        if len(message.content) == 0 or message.content[0] == const.COMMAND_PREFIX:
             return False
         return True
 
@@ -64,10 +68,14 @@ class Patchnote(Cog):
             await message.channel.send('ボイスチャンネルに接続して使用してください。')
             return
         voice_client = await context.author.voice.channel.connect()
+        if self.voice_controller is None:
+            await self.init_audio_controller()
         self.voice_controller.update(voice_client)
 
     @commands.command(name='dc')
     async def command_disconnect(self, context: Context):
+        if self.voice_controller is None:
+            await self.init_audio_controller()
         await self.voice_controller.disconnect()
 
     @Cog.listener(name='on_message')
@@ -77,16 +85,27 @@ class Patchnote(Cog):
         if not self.is_valid(message):
             return
 
-        speech_data = await self.request_text_to_speech(message)
+        if self.voice_controller is None:
+            await self.init_audio_controller()
+
+        text = message.content
+        filepath = self.audio_controller.load_audio(text)
+        if not filepath is None:
+            LogUtility.print(f'[GCP]音声データをローカルファイルから取得 {self.create_text_preview(text)}')
+            await self.voice_controller.append_audio(filepath)
+            return
+
+        speech_data = await self.request_text_to_speech(text)
         if speech_data == None:
             LogUtility.print('データが不正なため読み上げ終了')
             return
-        filename = self.write_audiofile(speech_data)
-        self.voice_controller.play(filename)
+        filepath = self.audio_controller.save_audio(text, speech_data)
+        await self.voice_controller.append_audio(filepath)
 
-    async def request_text_to_speech(self, message: Message) -> Union[bytes, None]:
+    async def request_text_to_speech(self, text: str) -> Union[bytes, None]:
+        LogUtility.print(f'[GCP]音声データを取得 {self.create_text_preview(text)}')
         async with aiohttp.ClientSession() as session:
-            payload_json = self.create_payload(message.content)
+            payload_json = self.create_payload(text)
             async with session.post(url=self.url, data=payload_json, headers=self.gcp_headers) as response:
                 if response.status != 200:
                     return None
@@ -96,8 +115,11 @@ class Patchnote(Cog):
                     return base64.b64decode(data['audioContent'])
                 return None
 
+    def create_text_preview(self, text: str) -> str:
+        preview = text if len(text) < 110 else f'{text[:100]}...{text[-10:]}'
+        return preview
+
     def create_payload(self, text: str, speed: float = 1.0, pitch: float = 0) -> str:
-        LogUtility.print(f'{text} {speed} {pitch}')
         payload = {
             "audioConfig": {
                 "audioEncoding": "OGG_OPUS" if self.use_ogg else "LINEAR16",
@@ -114,21 +136,6 @@ class Patchnote(Cog):
         }
 
         return json.dumps(payload, ensure_ascii=False)
-
-    def write_audiofile(self, data: bytes) -> str:
-        """オーディオファイルを出力
-
-        Args:
-            data (bytes): 音声データ
-
-        Returns:
-            str: オーディオファイルパス
-        """
-        ext = 'ogg' if self.use_ogg else 'wav'
-        filename = f'{self.audio_dir}/audio.{ext}'
-        with open(filename, "wb") as file:
-            file.write(data)
-        return filename
 
 def setup(bot: Client):
     return bot.add_cog(Patchnote(bot))
