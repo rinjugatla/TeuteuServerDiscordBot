@@ -154,7 +154,6 @@ class TextToSpeech(Cog):
 
     def validate_text(self, text: str) -> str:
         validated = self.replace_url(text)
-        LogUtility.print(f'validate_text: {validated}')
         return validated
 
     def replace_url(self, text: str) -> str:
