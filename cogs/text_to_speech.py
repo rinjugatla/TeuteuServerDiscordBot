@@ -5,7 +5,7 @@ from controls.audio_management_contoller import AudioManagementController
 from controls.voice_client_controller import VoiceClientController
 from utilities.log import LogUtility
 from discord import Client, Message
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Context
 if os.path.exists('pro.mode'):
     import secret.secret_pro as secret
@@ -22,16 +22,22 @@ class TextToSpeech(Cog):
         self.voice_controller = None
         self.audio_controller = AudioManagementController(use_ogg=self.use_ogg)
         self.url = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize'
-        self.set_gcp_info()
 
-    def set_gcp_info(self):
+    @Cog.listener(name='on_ready')
+    async def on_ready(self):
+        self.update_gcp_info.start()
+
+    @tasks.loop(minutes=30)
+    async def update_gcp_info(self):
+        """n分毎にGCPアクセストークンを更新
+        """
         self.gcp_token = self.get_gcp_token()
         self.gcp_headers = {
             'Authorization': f"Bearer {self.gcp_token}",
             'X-Goog-User-Project': const.GCP_PROJECT,
             'Content-Type': 'application/json; charset=utf-8',
         }
-        LogUtility.print('GCPトークン取得完了')
+        LogUtility.print('GCPトークン更新完了')
 
     def get_gcp_token(self):
         """GCPアクセストークン取得
