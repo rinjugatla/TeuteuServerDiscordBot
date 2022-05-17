@@ -69,17 +69,17 @@ class TextToSpeech(Cog):
         message = context.message
         if not self.is_valid_command(message):
             return
-
         if context.author.voice == None:
             await message.channel.send('ボイスチャンネルに接続して使用してください。')
             return
+            
+        if self.voice_controller is None:
+            await self.init_audio_controller()
         if self.voice_controller.is_connected:
             await message.channel.send('すでにVCに参加済みです。')
             return
         
         voice_client = await context.author.voice.channel.connect()
-        if self.voice_controller is None:
-            await self.init_audio_controller()
         self.voice_controller.update(voice_client)
 
     @commands.command(name='dc')
@@ -97,7 +97,6 @@ class TextToSpeech(Cog):
 
         if self.voice_controller is None:
             await self.init_audio_controller()
-
         if not self.voice_controller.is_connected:
             return
 
