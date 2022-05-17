@@ -103,15 +103,13 @@ class TextToSpeech(Cog):
         text = message.content
         filepath = self.audio_controller.load_audio(text)
         if not filepath is None:
-            LogUtility.print(f'[GCP]音声データをローカルファイルから取得 {self.create_text_preview(text)}')
+            LogUtility.print_green(f'[GCP]音声データをローカルファイルから取得 {self.create_text_preview(text)}')
             await self.voice_controller.append_audio(filepath)
             return
 
-        LogUtility.print_green(f'attachments: {len(message.attachments)} mentions: {message.mentions} url: {message.jump_url}')
-
         speech_data = await self.request_text_to_speech(text)
         if speech_data == None:
-            LogUtility.print('データが不正なため読み上げ終了')
+            LogUtility.print_red('データが不正なため読み上げ終了')
             return
         filepath = self.audio_controller.save_audio(text, speech_data)
         await self.voice_controller.append_audio(filepath)
@@ -123,13 +121,13 @@ class TextToSpeech(Cog):
             payload_json = self.create_payload(validated_text)
             async with session.post(url=self.url, data=payload_json, headers=self.gcp_headers) as response:
                 if response.status != 200:
-                    LogUtility.print_red(f'GCP error response {response}')
+                    LogUtility.print_red(f'[GCP]音声データの取得に失敗 {response.content}')
                     return None
 
                 data = await response.json()
                 if 'audioContent' in data:
                     return base64.b64decode(data['audioContent'])
-                LogUtility.print_red(f'audioContent not found {data}')
+                LogUtility.print_red(f'[GCP]音声データにaudioContent要素なし {data}')
                 return None
 
     def create_text_preview(self, text: str) -> str:
