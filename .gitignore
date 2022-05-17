@@ -3,3 +3,4 @@ secret
 venv
 __pycache__
 audio/*
+.vscode
