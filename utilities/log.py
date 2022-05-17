@@ -3,6 +3,10 @@ from discord import Message
 from pprint import pprint
 from discord.ext import commands
 
+RED = '\033[31m'
+GREEN = '\033[92m'
+BLUE = '\033[94m'
+END = '\033[0m'
 
 class LogUtility():
     @staticmethod
@@ -41,6 +45,15 @@ class LogUtility():
             bot (commands.bot): [description]
         """
         print(f'[{LogUtility.get_now()}] Logged in as {bot.user} ({bot.user.id})')
+
+    def print_red(text: str):
+        print(f'[{LogUtility.get_now()}] {RED}{text}{END}')
+
+    def print_green(text: str):
+        print(f'[{LogUtility.get_now()}] {GREEN}{text}{END}')
+
+    def print_blue(text: str):
+        print(f'[{LogUtility.get_now()}] {BLUE}{text}{END}')
     
     @staticmethod
     def print_error(text: str, description: str, traceback: str):
@@ -51,7 +64,7 @@ class LogUtility():
             description (str): _description_
             traceback (str): _description_
         """
-        print(f'[{LogUtility.get_now()}] {text}\n{description}\n{traceback}')
+        print(f'[{LogUtility.get_now()}] {RED}[ERROR]{text}{END}\n{description}\n{traceback}')
 
     @staticmethod
     def get_now() -> str:
