@@ -103,7 +103,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="493" y="340" name="apex_user_rank">
+<table x="493" y="340" name="apex_user_ranks">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
