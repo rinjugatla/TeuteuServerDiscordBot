@@ -13,6 +13,7 @@ class DiscordBot():
         
         self.bot = Bot(command_prefix = const.COMMAND_PREFIX, 
             intents = self.create_intents(),
+            debug_guilds=const.DEBUG_GUILDS,
             enable_debug_events = is_debug)
         
     def create_intents(self) -> Intents:
