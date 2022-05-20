@@ -166,3 +166,23 @@ For more information regarding 'X-Goog-User-Project' header, please check https:
 
 * 関連情報
   1. [GCP CloudAPIで"We recommend configuring the billing/quota_ project setting"というエラーが出た際の対処法](https://qiita.com/nii_yan/items/3bcd2940e15486b4c6e2)
+
+## SlashCommandの登録で405エラー
+
+* エラーメッセージ
+
+```log
+Ignoring exception in on_connect
+Traceback (most recent call last):
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\client.py", line 382, in _run_event
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\bot.py", line 1147, in on_connect
+    await self.sync_commands()
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\bot.py", line 770, in sync_commands
+    await self._bot.http.bulk_upsert_command_permissions(self._bot.user.id, guild_id, guild_cmd_perms)
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\http.py", line 359, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 405 Method Not Allowed (error code: 0): 405: Method Not Allowed
+```
+
+* 対処
+  pycordのバージョンを`2.0.0b7`から`2.0.0-rc.1`に変更
