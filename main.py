@@ -24,7 +24,7 @@ class DiscordBot():
     def start(self):
         for name in const.HOOL_MODULES_FIXED:
             self.bot.load_extension(name)
-        self.bot.run(secret.TOKEN)
+        self.bot.run(secret.BOT_TOKEN)
 
 bot = DiscordBot()
 bot.start()
