@@ -1,3 +1,4 @@
+from typing import Union
 from models.bot.apex_user_model import ApexUserModel
 from models.bot.apex_user_rank_model import ApexUserRankModel
 from utilities.database.database import DatabaseUtility
@@ -12,30 +13,30 @@ class DatabaseApexUserUrility(DatabaseUtility):
             result = cursor.fetchall()
             return result
 
-    def select_by_uid(self, apex_user: ApexUserModel):
+    def select_by_uid(self, apex_user: Union[ApexUserModel, ApexUserRankModel]):
         with self.connection.cursor() as cursor:
             cursor.execute(sql.SELECT_APEX_USERS, apex_user.database_dict)
             result = cursor.fetchone()
             return result
 
     # UPDATE
-    def update_by_uid(self, apex_user: ApexUserModel):
+    def update_by_uid(self, apex_user: Union[ApexUserModel, ApexUserRankModel]):
         with self.connection.cursor() as cursor:
             cursor.execute(sql.UPDATE_APEX_USER_BY_UID, apex_user.database_dict)
         self.commit()
 
-    def update_by_name(self, apex_user: ApexUserModel):
+    def update_by_name(self, apex_user: Union[ApexUserModel, ApexUserRankModel]):
         with self.connection.cursor() as cursor:
             cursor.execute(sql.UPDATE_APEX_USER_BY_NAME, apex_user.database_dict)
         self.commit()
 
     # DELETE
-    def delete_by_uid(self, apex_user: ApexUserModel):
+    def delete_by_uid(self, apex_user: Union[ApexUserModel, ApexUserRankModel]):
         with self.connection.cursor() as cursor:
             cursor.execute(sql.DELETE_APEX_USER_BY_UID, apex_user.database_dict)
         self.commit()
 
-    def delete_name(self, apex_user: ApexUserModel):
+    def delete_name(self, apex_user: Union[ApexUserModel, ApexUserRankModel]):
         with self.connection.cursor() as cursor:
             cursor.execute(sql.DELETE_APEX_USER_BY_NAME, apex_user.database_dict)
         self.commit()

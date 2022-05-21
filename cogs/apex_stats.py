@@ -5,6 +5,7 @@ from discord import ApplicationContext, Client, Message
 from discord.commands import Option
 from discord.ext.commands import Cog, slash_command
 from models.bot.apex_user_model import ApexUserModel
+from models.bot.apex_user_rank_model import ApexUserRankModel
 from models.database.apex_user_database_model import ApexUserDatabaseModel
 
 from secret.secret_dev import APEX_TOKEN
@@ -42,8 +43,8 @@ class ApexStats(Cog):
             if user is None:
                 await context.respond('ユーザの追加に失敗しました。')
             else:
-                user: ApexUserModel
-                await context.respond(f'ユーザ({user.name})を追加しました。')
+                user: ApexUserRankModel
+                await context.respond(f'ユーザ{user.name}({user.uid})を追加しました。')
 
         elif action == 'show':
             users = self.get_users()
@@ -71,7 +72,7 @@ class ApexStats(Cog):
         else:
             pass
 
-    async def add_apex_user(self, uid: int, name: str, platform: str) -> Union[ApexUserModel, None]:
+    async def add_apex_user(self, uid: int, name: str, platform: str) -> Union[ApexUserRankModel, None]:
         if uid is None and name is None:
             return None
         
@@ -94,19 +95,19 @@ class ApexStats(Cog):
             users = [ApexUserDatabaseModel(user) for user in users_list]
             return users
 
-    async def get_user_by_uid(self, uid: int, platform: str):
+    async def get_user_by_uid(self, uid: int, platform: str) -> ApexUserRankModel:
         base_url = 'https://api.mozambiquehe.re/bridge?uid=:uid:&platform=:platform:&merge=true&removeMerged=true'
         url = base_url.replace(':uid:', str(uid)).replace(':platform:', platform)
         user = await self.post_user_api(url)
         return user
 
-    async def get_user_by_name(self, name: str, platform: str):
+    async def get_user_by_name(self, name: str, platform: str) -> ApexUserRankModel:
         base_url = 'https://api.mozambiquehe.re/bridge?player=:name:&platform=:platform:&merge=true&removeMerged=true'
         url = base_url.replace(':name:', name).replace(':platform:', platform)
         user = await self.post_user_api(url)
         return user
 
-    async def post_user_api(self, url: str) -> ApexUserModel:
+    async def post_user_api(self, url: str) -> ApexUserRankModel:
         """ApexLegendsUserStatus
             https://apexlegendsapi.com/#query-by-name
             https://apexlegendsapi.com/#query-by-uid
@@ -115,7 +116,7 @@ class ApexStats(Cog):
             url (str): エンドポイント
 
         Returns:
-            ApexUserModel: _description_
+            ApexUserRankModel: ランク情報を含むユーザ情報
         """
         async with aiohttp.ClientSession() as session:
             async with session.post(url=url, headers=self.get_api_header()) as response:
@@ -124,7 +125,7 @@ class ApexStats(Cog):
 
                 # header: Content-Type: text/plain;charset=UTF-8なのでresponse.json()は利用不可
                 data = json.loads(await response.text())
-                user = ApexUserModel(data)
+                user = ApexUserRankModel(data)
                 return user
 
     def get_api_header(self) -> dict:
