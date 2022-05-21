@@ -14,8 +14,6 @@ class ApexUserDatabaseModel():
         self.__name: str = user['name']
         self.__uid: int = user['uid']
         self.__platform: str = user['platform']
-        # self.__craeted_at = user['created_at'] if 'created_at' in user else None
-        # self.__updated_at = user['updated_at'] if 'updated_at' in user else None
 
     @property
     def id(self) -> int:
@@ -36,11 +34,3 @@ class ApexUserDatabaseModel():
     @property
     def platform(self) -> int:
         return self.__platform
-
-    # @property
-    # def created_at(self) -> int:
-    #     return self.__created_at
-
-    # @property
-    # def updated_at(self) -> int:
-    #     return self.__updated_at

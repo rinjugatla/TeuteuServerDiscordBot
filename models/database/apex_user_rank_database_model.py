@@ -24,8 +24,6 @@ class ApexUserRankDatabaseModel(ApexUserDatabaseModel):
             'name': rank['arena_name'],
             'division': rank['arena_division']
         }
-        # self.__craeted_at = rank['created_at']
-        # self.__updated_at = rank['created_at']
 
     @property
     def id(self) -> int:
