@@ -241,3 +241,37 @@ discord.errors.ExtensionFailed: Extension 'cogs.apex_stats' raised an error: Val
                         name: Option(str, 'アカウント名', required=False)
                         ):
 ```
+
+## slash_commandの引数`required = False`が`required = True`よりも前にあるとエラー
+
+* エラーメッセージ
+
+```log
+Ignoring exception in on_connect
+Traceback (most recent call last):
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\client.py", line 382, in _run_event
+    await coro(*args, **kwargs)
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\bot.py", line 1042, in on_connect
+    await self.sync_commands()
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\bot.py", line 644, in sync_commands
+    registered_guild_commands[guild_id] = await self.register_commands(
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\bot.py", line 529, in register_commands
+    registered = await register("bulk", data, _log=False)
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\http.py", line 359, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 400 Bad Request (error code: 50035): Invalid Form Body
+In options.3: Required options must be placed before non-required options
+```
+
+* 対処
+  `required = True`の引数を先に書く
+  
+ ```diff
+     async def apex_user(self, context: ApplicationContext,
+                        action: Option(str, 'アクション名', choice=['add','remove'], required=True),
+++                     platform: Option(str, 'プラットフォーム名', choice=['PC', 'PS4', 'X1', 'SWITCH'], required=True),
+                        uid: Option(int, 'UID', required=False),
+                        name: Option(str, 'アカウント名', required=False),
+--                     platform: Option(str, 'プラットフォーム名', choice=['PC', 'PS4', 'X1', 'SWITCH'], required=True)
+                        ):
+ ```
