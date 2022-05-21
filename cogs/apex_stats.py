@@ -1,7 +1,7 @@
 import json
 import os, aiohttp
 from typing import Union
-from discord import ApplicationContext, Client, Message
+from discord import ApplicationContext, Client, Message, SlashCommandGroup
 from discord.commands import Option
 from discord.ext.commands import Cog, slash_command
 from models.bot.apex_user_model import ApexUserModel
@@ -20,6 +20,8 @@ else:
 class ApexStats(Cog):
     def __init__(self, bot: Client):
         self.bot = bot
+
+    user_command_group = SlashCommandGroup("apex_user", "ランクポイント統計を追跡するプレイヤの操作")
     
     def is_valid(self, message: Message):
         if message.author.bot:
@@ -28,37 +30,39 @@ class ApexStats(Cog):
             return False
         return True
 
-    @slash_command(description='ランクポイント統計を追跡するプレイヤの操作')
-    async def apex_user(self, context: ApplicationContext,
-                        action: Option(str, 'アクション名(add: ユーザ追加, show: 登録済みユーザ表示, remove: 未実装)', choices=['add', 'show','remove'], default='add', required=True),
-                        platform: Option(str, 'プラットフォーム名', choices=['PC', 'PS4', 'X1', 'SWITCH'], default='PC', required=False),
-                        uid: Option(int, 'UID', required=False),
-                        name: Option(str, 'アカウント名', required=False)):
-        if action == 'add':
-            if uid is None and name is None:
-                await context.respond('uidまたはnameを指定してください。')
-                return
+    @user_command_group.command(name='add', description='ランク統計追跡ユーザを追加')
+    async def apex_user_add(self, context: ApplicationContext,
+                            platform: Option(str, 'プラットフォーム名', choices=['PC', 'PS4', 'X1', 'SWITCH'], default='PC', required=True),
+                            uid: Option(int, 'UID', required=False),
+                            name: Option(str, 'アカウント名', required=False)):
+        if uid is None and name is None:
+            await context.respond('uidまたはnameを指定してください。')
+            return
             
-            user = await self.add_apex_user(uid, name, platform)
-            if user is None:
-                await context.respond('ユーザの追加に失敗しました。')
-            else:
-                user: ApexUserRankModel
-                await context.respond(f'ユーザ{user.name}({user.uid})を追加しました。')
+        user = await self.add_apex_user(uid, name, platform)
+        if user is None:
+            await context.respond('ユーザの追加に失敗しました。')
+        else:
+            user: ApexUserRankModel
+            await context.respond(f'ユーザ{user.name}({user.uid})を追加しました。')
 
-        elif action == 'show':
-            users = self.get_users()
-            if users is None or len(users) == 0:
-                await context.respond(f'ユーザが登録されていません。先に[/apex_user add ~]を実行してください。')
-                return
+    @user_command_group.command(name='show', description='ランク統計追跡ユーザを表示')
+    async def apex_user_show(self, context: ApplicationContext):
+        users = self.get_users()
+        if users is None or len(users) == 0:
+            await context.respond(f'ユーザが登録されていません。先に[/apex_user add ~]を実行してください。')
+            return
 
-            users_summary_list = [user.summary() for user in users]
-            users_preview = '\n'.join(users_summary_list)
-            await context.respond(f'登録済みのユーザ\n{users_preview}')
+        users_summary_list = [user.summary() for user in users]
+        users_preview = '\n'.join(users_summary_list)
+        await context.respond(f'登録済みのユーザ\n{users_preview}')
 
-        elif action == 'remove':
-            await context.respond('remove機能は未実装です。')
-
+    # 未実装
+    # @user_command_group.command(name='remove', description='ランク統計の追跡を取り消し')
+    # async def apex_user_remove(self, context: ApplicationContext,
+    #                             uid: Option(int, 'UID', required=True)):
+    #     pass
+    
     @slash_command(description='ランクポイントの統計を操作')
     async def apex_rank(self, context: ApplicationContext,
                         action: Option(str, 'アクション名', choices=['add','remove'], default='add', required=True),
