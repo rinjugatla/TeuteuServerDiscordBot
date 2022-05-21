@@ -38,16 +38,15 @@ class ApexStats(Cog):
             await context.respond('uidまたはnameを指定してください。')
             return
             
-        user = await self.add_apex_user(uid, name, platform)
+        user = await self.regist_apex_user(uid, name, platform)
         if user is None:
             await context.respond('ユーザの追加に失敗しました。')
         else:
-            user: ApexUserRankModel
             await context.respond(f'ユーザ{user.name}({user.uid})を追加しました。')
 
     @user_command_group.command(name='show', description='ランク統計追跡ユーザを表示')
     async def apex_user_show(self, context: ApplicationContext):
-        users = self.get_users()
+        users = self.get_registerd_users()
         if users is None or len(users) == 0:
             await context.respond(f'ユーザが登録されていません。先に[/apex_user add ~]を実行してください。')
             return
@@ -78,7 +77,7 @@ class ApexStats(Cog):
         pass
 
 
-    async def add_apex_user(self, uid: int, name: str, platform: str) -> Union[ApexUserRankModel, None]:
+    async def regist_apex_user(self, uid: int, name: str, platform: str) -> Union[ApexUserRankModel, None]:
         if uid is None and name is None:
             return None
         
@@ -95,7 +94,9 @@ class ApexStats(Cog):
             database.update_by_uid(user)
             return user
 
-    def get_users(self) -> list[ApexUserDatabaseModel]:
+    def get_registerd_users(self) -> list[ApexUserDatabaseModel]:
+        """データベースに登録済みのユーザ情報を取得
+        """
         with DatabaseApexUserUrility() as database:
             users_list = database.select_users()
             users = [ApexUserDatabaseModel(user) for user in users_list]
