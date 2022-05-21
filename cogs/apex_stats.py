@@ -29,7 +29,7 @@ class ApexStats(Cog):
 
     @slash_command(description='ランクポイント統計を追跡するプレイヤの操作')
     async def apex_user(self, context: ApplicationContext,
-                        action: Option(str, 'アクション名', choices=['add', 'show','remove'], default='add', required=True),
+                        action: Option(str, 'アクション名(add: ユーザ追加, show: 登録済みユーザ表示, remove: 未実装)', choices=['add', 'show','remove'], default='add', required=True),
                         platform: Option(str, 'プラットフォーム名', choices=['PC', 'PS4', 'X1', 'SWITCH'], default='PC', required=False),
                         uid: Option(int, 'UID', required=False),
                         name: Option(str, 'アカウント名', required=False)):
