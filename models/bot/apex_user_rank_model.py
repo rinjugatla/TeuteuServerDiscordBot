@@ -92,7 +92,7 @@ class ApexUserRankModel(ApexUserModel):
 
     @property
     def database_dict(self) -> dict:
-        result: dict = super().database_dict()
+        result: dict = super().database_dict
         result.update({
             'season': self.season,
             'split': self.split,
