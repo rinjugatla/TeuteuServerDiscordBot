@@ -4,11 +4,10 @@ from models.bot.apex_user_model import ApexUserModel
 
 class ApexUserRankModel(ApexUserModel):
     def __init__(self, data: dict):
+        super().__init__(data)
         self.__parse(data)
         
     def __parse(self, data: dict):
-        super().__parse(data)
-
         data_global = data['global'] if 'global' in data else None
         if data_global is None:
             return
