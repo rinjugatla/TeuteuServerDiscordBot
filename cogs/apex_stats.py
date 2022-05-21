@@ -53,7 +53,7 @@ class ApexStats(Cog):
 
             users_summary_list = [user.summary() for user in users]
             users_preview = '\n'.join(users_summary_list)
-            await context.respond(users_preview)
+            await context.respond(f'登録済みのユーザ\n{users_preview}')
 
         elif action == 'remove':
             await context.respond('remove機能は未実装です。')
