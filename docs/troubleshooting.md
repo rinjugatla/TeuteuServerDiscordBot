@@ -186,3 +186,58 @@ discord.errors.HTTPException: 405 Method Not Allowed (error code: 0): 405: Metho
 
 * 対処
   pycordのバージョンを`2.0.0b7`から`2.0.0-rc.1`に変更
+
+## slash_commandの引数のdescriptionを空文字列にするとエラーが発生
+
+* エラーメッセージ
+
+```log
+Traceback (most recent call last):
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\cog.py", line 715, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "C:\workspace\discord\TeuteuServerDiscordBot\cogs\apex_stats.py", line 17, in <module>
+    class ApexStats(Cog):
+  File "C:\workspace\discord\TeuteuServerDiscordBot\cogs\apex_stats.py", line 29, in ApexStats
+    async def apex_user(self, context: ApplicationContext,
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\commands\core.py", line 1580, in decorator
+    return cls(func, **attrs)
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\commands\core.py", line 644, in __init__
+    self.options: List[Option] = self._parse_options(params)
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\commands\core.py", line 707, in _parse_options
+    _validate_descriptions(option)
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\commands\core.py", line 163, in _validate_descriptions
+    validate_chat_input_description(obj.description)
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\commands\core.py", line 1679, in validate_chat_input_description
+    raise error
+discord.errors.ValidationError: Command and option description must be 1-100 characters long. Received ""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\workspace\discord\TeuteuServerDiscordBot\main.py", line 31, in <module>
+    bot.start()
+  File "C:\workspace\discord\TeuteuServerDiscordBot\main.py", line 27, in start
+    self.bot.load_extension(name)
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\cog.py", line 787, in load_extension
+    self._load_from_module_spec(spec, name)
+  File "C:\workspace\discord\TeuteuServerDiscordBot\venv\lib\site-packages\discord\cog.py", line 718, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.errors.ExtensionFailed: Extension 'cogs.apex_stats' raised an error: ValidationError: Command and option description must be 1-100 characters long. Received ""
+```
+
+* 原因
+  slash_commandの引数が正しく与えられていない
+
+* 対処
+  引数を正しく与える
+  
+```diff
+    async def apex_user(self, context: ApplicationContext,
+--                        action: Option(str, '', choice=['add','remove'], required=True),
+++                        action: Option(str, 'hogehoge', choice=['add','remove'], required=True),
+                        uid: Option(int, 'UID', required=False),
+                        name: Option(str, 'アカウント名', required=False)
+                        ):
+```
