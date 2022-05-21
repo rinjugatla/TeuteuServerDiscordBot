@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: 127.0.0.1
--- 生成日時: 2022-05-18 05:32:35
+-- 生成日時: 2022-05-21 13:21:16
 -- サーバのバージョン： 10.7.3-MariaDB
 -- PHP のバージョン: 8.1.1
 
@@ -31,6 +31,7 @@ USE `teuteu_discord_server`;
 
 CREATE TABLE `apex_users` (
   `id` int(11) NOT NULL,
+  `level` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
   `uid` bigint(20) NOT NULL,
   `platform` varchar(4) NOT NULL,
@@ -96,7 +97,8 @@ CREATE TABLE `tts_words` (
 -- テーブルのインデックス `apex_users`
 --
 ALTER TABLE `apex_users`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_01` (`uid`) USING BTREE;
 
 --
 -- テーブルのインデックス `apex_user_ranks`

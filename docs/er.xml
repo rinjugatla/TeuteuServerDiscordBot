@@ -37,7 +37,7 @@
 		<type label="SET" length="1" sql="SET" quote=""/>
 		<type label="Bit" length="0" sql="bit" quote=""/>
 	</group>
-</datatypes><table x="150" y="342" name="tts_files">
+</datatypes><table x="491" y="103" name="tts_files">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -60,7 +60,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="151" y="533" name="tts_words">
+<table x="492" y="294" name="tts_words">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -80,8 +80,11 @@
 <part>id</part>
 </key>
 </table>
-<table x="306" y="335" name="apex_users">
+<table x="647" y="96" name="apex_users">
 <row name="id" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="level" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 <row name="name" null="1" autoincrement="0">
@@ -103,7 +106,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="493" y="340" name="apex_user_ranks">
+<table x="834" y="101" name="apex_user_ranks">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
