@@ -20,6 +20,7 @@ class ApexStats(Cog):
         self.bot = bot
 
     user_command_group = SlashCommandGroup("apex_user", "ランクポイント統計を追跡するプレイヤの操作")
+    rank_command_group = SlashCommandGroup("apex_rank", "ランクポイントの統計の操作")
     
     def is_valid(self, message: Message):
         if message.author.bot:
@@ -61,18 +62,21 @@ class ApexStats(Cog):
     #                             uid: Option(int, 'UID', required=True)):
     #     pass
     
-    @slash_command(description='ランクポイントの統計を操作')
-    async def apex_rank(self, context: ApplicationContext,
-                        action: Option(str, 'アクション名', choices=['add','remove'], default='add', required=True),
-                        platform: Option(str, 'プラットフォーム名', choices=['PC', 'PS4', 'X1', 'SWITCH'], default='PC', required=True),
-                        uid: Option(int, 'uid', required=False),
-                        name: Option(str, 'アカウント名', required=False)):
-        if action == 'show':
-            pass
-        elif action == 'refresh':
-            pass
-        else:
-            pass
+    @rank_command_group.command(name='show_one', description='ランク統計を表示')
+    async def apex_rank_show_one(self, context: ApplicationContext,
+                            uid: Option(int, 'uid', required=True),
+                            detail: Option(bool, '詳細な情報を表示するか', default=False, required=False)):
+        pass
+
+    @rank_command_group.command(name='show_all', description='全員のランク統計を表示')
+    async def apex_rank_show_one(self, context: ApplicationContext,
+                            detail: Option(bool, '詳細な情報を表示するか', default=False, required=False)):
+        pass
+
+    @rank_command_group.command(name='refresh', description='ランク情報を強制的に更新する')
+    async def apex_rank_refresh(self, context: ApplicationContext):
+        pass
+
 
     async def add_apex_user(self, uid: int, name: str, platform: str) -> Union[ApexUserRankModel, None]:
         if uid is None and name is None:
