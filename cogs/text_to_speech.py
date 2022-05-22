@@ -4,7 +4,7 @@ import os, json, aiohttp, base64, re
 from controls.audio_management_contoller import AudioManagementController
 from controls.voice_client_controller import VoiceClientController
 from utilities.log import LogUtility
-from discord import Client, Message
+from discord import Client, Guild, Message
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Context
 if os.path.exists('pro.mode'):
@@ -107,17 +107,17 @@ class TextToSpeech(Cog):
             await self.voice_controller.append_audio(filepath)
             return
 
-        speech_data = await self.request_text_to_speech(text)
+        speech_data = await self.request_text_to_speech(message.guild, text)
         if speech_data == None:
             LogUtility.print_red('データが不正なため読み上げ終了')
             return
         filepath = self.audio_controller.save_audio(text, speech_data)
         await self.voice_controller.append_audio(filepath)
 
-    async def request_text_to_speech(self, text: str) -> Union[bytes, None]:
+    async def request_text_to_speech(self, guild: Guild, text: str) -> Union[bytes, None]:
         LogUtility.print_green(f'[GCP]音声データを取得 {text}')
         async with aiohttp.ClientSession() as session:
-            validated_text= self.validate_text(text)
+            validated_text= self.validate_text(guild, text)
             payload_json = self.create_payload(validated_text)
             async with session.post(url=self.url, data=payload_json, headers=self.gcp_headers) as response:
                 if response.status != 200:
@@ -152,14 +152,92 @@ class TextToSpeech(Cog):
 
         return json.dumps(payload, ensure_ascii=False)
 
-    def validate_text(self, text: str) -> str:
+    def validate_text(self, guild: Guild, text: str) -> str:
+        """URlやメンションを
+        """
         validated = self.replace_url(text)
+        validated = self.replace_role(guild, validated)
+        validated = self.replace_member(guild, validated)
+        validated = self.replace_channel(guild, validated)
+        LogUtility.print_green(f'[TTS]メッセージを修正 {validated}')
         return validated
 
     def replace_url(self, text: str) -> str:
         pattern = r'[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)'
         replaced = re.sub(pattern, 'URL', text)
         return replaced
+
+    def replace_role(self, guild: Guild, text: str) -> str:
+        """ロールIDをロール名に修正
+
+            <@&12345567> を ロール名 に置き換え
+        """
+        # [('<@&883972996883181568>', '883972996883181568'), ...]
+        pattern = r'(<@&([\d]+)>)'
+        role_ids = re.findall(pattern, text)
+        validated = text
+        for role_id in role_ids:
+            id = int(role_id[1])
+            name = self.get_role_name_by_id(guild, id)
+            validated = validated.replace(role_id[0], '不明なロール' if name is None else name)
+            
+        return validated
+
+    def get_role_name_by_id(self, guild: Guild, id: int) -> str:
+        """ロールIDからロール名を取得
+        """
+        roles = [role for role in guild.roles if role.id == id]
+        if roles is None or len(roles) == 0:
+            return None
+        return roles[0].name
+
+    def replace_member(self, guild: Guild, text: str) -> str:
+        """メンバーIDをメンバー名に修正
+
+            <@1234> を メンバー名 に置き換え
+            ニックネームの場合は「@!」<@!1234>
+        """
+        # [('<@883972996883181568>', '883972996883181568'), ...]
+        pattern = r'(<@!?([\d]+)>)'
+        member_ids = re.findall(pattern, text)
+        validated = text
+        for member_id in member_ids:
+            id = int(member_id[1])
+            name = self.get_member_name_by_id(guild, id)
+            validated = validated.replace(member_id[0], '不明なユーザ' if name is None else name)
+            
+        return validated
+
+    def get_member_name_by_id(self, guild: Guild, id: int) -> str:
+        """メンバーIDからメンバー名を取得
+        """
+        members = [member for member in guild.members if member.id == id]
+        if members is None or len(members) == 0:
+            return None
+        return members[0].name
+
+    def replace_channel(self, guild: Guild, text: str) -> str:
+        """チャンネルIDをチャンネル名に修正
+
+            <#1234> を チャンネル名に置き換え
+        """
+        pattern = r'(<#([\d]+)>)'
+        channel_ids = re.findall(pattern, text)
+        validated = text
+        for channel_id in channel_ids:
+            id = int(channel_id[1])
+            name = self.get_channel_name_by_id(guild, id)
+            validated = validated.replace(channel_id[0], '不明なチャンネル' if name is None else name)
+            
+        return validated
+    
+    def get_channel_name_by_id(self, guild: Guild, id: int) -> str:
+        """チャンネルIDからチャンネル名を取得
+        """
+        channels = [channel for channel in guild.channels if channel.id == id]
+        if channels is None or len(channels) == 0:
+            return None
+        return channels[0].name
 
 def setup(bot: Client):
     return bot.add_cog(TextToSpeech(bot))
