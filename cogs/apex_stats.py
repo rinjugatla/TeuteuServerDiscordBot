@@ -78,6 +78,16 @@ class ApexStats(Cog):
 
 
     async def regist_apex_user(self, uid: int, name: str, platform: str) -> Union[ApexUserRankModel, None]:
+        """ユーザ情報をDBに登録
+
+        Args:
+            uid (int): uidまたはnameの指定が必須
+            name (str): uidまたはnameの指定が必須
+            platform (str): プラットフォーム(PC, PS4, X1, SWITCH)
+
+        Returns:
+            Union[ApexUserRankModel, None]: ランク情報を含むユーザ情報
+        """
         if uid is None and name is None:
             return None
         
