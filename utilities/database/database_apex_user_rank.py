@@ -35,7 +35,7 @@ class DatabaseApexUserRankUrility(DatabaseUtility):
             for user_rank in user_ranks:
                 if user_rank is None:
                     continue
-                cursor.execute(sql.INSERT_APEX_USER_RANK_BY_APEX_USER_UID, user_rank.database_dict)
+                cursor.execute(sql.INSERT_APEX_USER_RANK_BY_UID, user_rank.database_dict)
             self.commit()
         return True
     
@@ -50,6 +50,6 @@ class DatabaseApexUserRankUrility(DatabaseUtility):
             for user_rank in user_ranks:
                 if user_rank is None:
                     continue
-                cursor.execute(sql.INSERT_APEX_USER_RANK_BY_APEX_USER_NAME, user_rank.database_dict)
+                cursor.execute(sql.INSERT_APEX_USER_RANK_BY_NAME, user_rank.database_dict)
             self.commit()
         return True
