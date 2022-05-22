@@ -2,11 +2,9 @@ import os, aiohttp, json
 from typing import Union
 from discord import ApplicationContext, Client, Message, SlashCommandGroup
 from discord.commands import Option
-from discord.ext.commands import Cog, slash_command
+from discord.ext.commands import Cog
 from models.bot.apex_user_rank_model import ApexUserRankModel
 from models.database.apex_user_database_model import ApexUserDatabaseModel
-
-from secret.secret_dev import APEX_TOKEN
 from utilities.database.database_apex_user import DatabaseApexUserUrility
 if os.path.exists('pro.mode'):
     import secret.secret_pro as secret
