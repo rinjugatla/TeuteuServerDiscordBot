@@ -159,7 +159,8 @@ class TextToSpeech(Cog):
         validated = self.replace_role(guild, validated)
         validated = self.replace_member(guild, validated)
         validated = self.replace_channel(guild, validated)
-        LogUtility.print_green(f'[TTS]メッセージを修正 {validated}')
+        if text != validated:
+            LogUtility.print_green(f'[TTS]メッセージを修正 {validated}')
         return validated
 
     def replace_url(self, text: str) -> str:
