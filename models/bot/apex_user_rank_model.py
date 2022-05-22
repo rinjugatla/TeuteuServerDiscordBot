@@ -32,10 +32,11 @@ class ApexUserRankModel(ApexUserModel):
         """シーズンとスプリットを設定
         """
         pattern = r'season(?P<season>[\d]+)_split_(?P<split>[\d])'
+        
         match = re.match(pattern, data_rank['rankedSeason'])
         if match:
-            self.__season = -1
-            self.__split = -1
+            self.__season = match.group('season')
+            self.__split = match.group('split')
         else:
             self.__season = -1
             self.__split = -1
