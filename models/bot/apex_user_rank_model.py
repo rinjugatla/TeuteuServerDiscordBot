@@ -6,6 +6,11 @@ class ApexUserRankModel(ApexUserModel):
     def __init__(self, data: dict):
         super().__init__(data)
         self.__parse(data)
+
+    def __str__(self) -> str:
+        text = super().__str__()
+        text += f'\n{self.season} {self.split}\nbattle: {self.battle}\narena: {self.arena}'
+        return text
         
     def __parse(self, data: dict):
         data_global = data['global'] if 'global' in data else None
