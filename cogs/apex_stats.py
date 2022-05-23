@@ -3,9 +3,12 @@ from typing import Union
 from discord import ApplicationContext, Client, Message, SlashCommandGroup
 from discord.commands import Option
 from discord.ext.commands import Cog
+from models.bot.apex_user_model import ApexUserModel
 from models.bot.apex_user_rank_model import ApexUserRankModel
 from models.database.apex_user_database_model import ApexUserDatabaseModel
 from utilities.database.database_apex_user import DatabaseApexUserUrility
+from utilities.database.database_apex_user_rank import DatabaseApexUserRankUrility
+from utilities.log import LogUtility
 if os.path.exists('pro.mode'):
     import secret.secret_pro as secret
     import secret.const_pro as const
@@ -63,7 +66,9 @@ class ApexStats(Cog):
     async def apex_rank_show_one(self, context: ApplicationContext,
                             uid: Option(int, 'uid', required=True),
                             detail: Option(bool, '詳細な情報を表示するか', default=False, required=False)):
-        pass
+        user = await self.refresh_apex_user_rank(uid)
+        await context.respond(f'{user.name}({user.uid})\nbattle: {user.battle_name}{user.battle_division}({user.battle_score})\narena: {user.arena_name}{user.arena_division}({user.arena_score})')
+
 
     @rank_command_group.command(name='show_all', description='全員のランク統計を表示')
     async def apex_rank_show_one(self, context: ApplicationContext,
@@ -109,6 +114,29 @@ class ApexStats(Cog):
             users_list = database.select_users()
             users = [ApexUserDatabaseModel(user) for user in users_list]
             return users
+
+    async def refresh_apex_user_rank(self, uid: int) -> Union[ApexUserRankModel, None]:
+        """データベースに登録済みの追跡対象ユーザのランク情報を取得して登録
+        """
+        user = None
+        with DatabaseApexUserUrility() as database:
+            user: ApexUserDatabaseModel = database.select_by_uid(uid=uid)
+        refreshed_user = await self.get_user_by_uid(user.uid, user.platform)
+        with DatabaseApexUserRankUrility() as database:
+            database.insert_rank_by_uid(refreshed_user)
+        return refreshed_user
+
+    async def refresh_apex_user_ranks(self) -> Union[list[ApexUserRankModel], None]:
+        """データベースに登録されている追跡対象のユーザすべてのランク情報を取得して登録
+        """
+        users = self.get_registerd_users()
+        if users is None or len(users) == 0:
+            return None
+
+        refreshed_users = [await self.get_user_by_uid(uid=user.uid, platform=user.platform) for user in users]
+        with DatabaseApexUserRankUrility() as database:
+            database.insert_ranks_by_uid(refreshed_users)
+        return refreshed_users
 
     async def get_user_by_uid(self, uid: int, platform: str) -> ApexUserRankModel:
         base_url = 'https://api.mozambiquehe.re/bridge?uid=:uid:&platform=:platform:&merge=true&removeMerged=true'
