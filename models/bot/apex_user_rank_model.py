@@ -1,4 +1,6 @@
 import re
+
+from discord import Embed
 from models.bot.apex_user_model import ApexUserModel
 
 
@@ -11,7 +13,7 @@ class ApexUserRankModel(ApexUserModel):
         text = super().__str__()
         text += f'\n{self.season} {self.split}\nbattle: {self.battle}\narena: {self.arena}'
         return text
-        
+
     def __parse(self, data: dict):
         data_global = data['global'] if 'global' in data else None
         if data_global is None:
@@ -95,6 +97,43 @@ class ApexUserRankModel(ApexUserModel):
     @property
     def arena_stats(self) -> str:
         return f'{self.arena_name} {self.arena_division}({self.arena_score})'
+
+    @property
+    def embed(self) -> Embed:
+        embed = Embed(
+            title=f'{self.name}',
+            color=self.embed_color,
+        )
+        embed.add_field(name='プラットフォーム', value=self.platform)
+        embed.add_field(name='レベル', value=self.level)
+        embed.add_field(name='UID', value=self.uid)
+        embed.add_field(name='バトルロワイヤル', value=f'{self.battle_name} {self.battle_division}')
+        embed.add_field(name='スコア', value=self.battle_score)
+        embed.add_field(name='前回からの変化', value='+10')
+        embed.add_field(name='アリーナ', value=f'{self.arena_name} {self.arena_division}')
+        embed.add_field(name='スコア', value=self.arena_score)
+        embed.add_field(name='前回からの変化', value='+-0')
+        return embed
+
+    @property
+    def embed_color(self) -> int:
+        lower = self.battle_name.lower()
+        code = '0xffffff'
+        if lower == 'bronze':
+            code = '0xa06c48'
+        elif lower == 'silver':
+            code = '0x4c4a4c'
+        elif lower == 'gold':
+            code = '0xe6b422'
+        elif lower == 'platinum':
+            code = '0xb2ffff'
+        elif lower == 'diamond':
+            code = '0x1663a8'
+        elif lower == 'master':
+            code = '0x7d49b1'
+        elif lower == 'predator':
+            code = '0xff0000'
+        return int(code, 16)
 
     @property
     def database_dict(self) -> dict:

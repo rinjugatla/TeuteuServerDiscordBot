@@ -67,18 +67,23 @@ class ApexStats(Cog):
                             uid: Option(int, 'uid', required=True),
                             detail: Option(bool, '詳細な情報を表示するか', default=False, required=False)):
         user = await self.refresh_apex_user_rank(uid)
-        await context.respond(f'{user.name}({user.uid})\nbattle: {user.battle_name}{user.battle_division}({user.battle_score})\narena: {user.arena_name}{user.arena_division}({user.arena_score})')
-
+        await context.channel.send(embed=user.embed)
+        await context.delete()
 
     @rank_command_group.command(name='show_all', description='全員のランク統計を表示')
     async def apex_rank_show_one(self, context: ApplicationContext,
                             detail: Option(bool, '詳細な情報を表示するか', default=False, required=False)):
-        pass
+        users = await self.refresh_apex_user_ranks()
+        embeds = [user.embed for user in users]
+        if embeds is None or len(embeds) == 0:
+            await context.respond('ユーザが登録されていません。先に[/apex_user add ~]を実行してください。')
+            return
+        await context.channel.send(embeds=embeds)
+        await context.delete()
 
     @rank_command_group.command(name='refresh', description='ランク情報を強制的に更新する')
     async def apex_rank_refresh(self, context: ApplicationContext):
         pass
-
 
     async def regist_apex_user(self, uid: int, name: str, platform: str) -> Union[ApexUserRankModel, None]:
         """ユーザ情報をDBに登録
