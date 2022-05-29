@@ -1,7 +1,6 @@
 import os
-from discord import Client, Embed, Message, Color
-from discord.ext import commands
-from discord.ext.commands import Cog, Context
+from discord import ApplicationContext, Client, Embed, Color, slash_command
+from discord.ext.commands import Cog
 if os.path.exists('pro.mode'):
     import secret.secret_pro as secret
     import secret.const_pro as const
@@ -13,19 +12,9 @@ class BasicCommand(Cog):
     def __init__(self, bot: Client):
         self.bot = bot
 
-    def is_valid(self, message: Message):
-        if message.author.bot:
-            return False
-        if len(message.content) == 0 or message.content[0] == const.COMMAND_PREFIX:
-            return False
-        return True
-
-    @commands.command(name='he')
-    async def command_connect(self, context: Context):
-        if self.is_valid(context.message):
-            return
-
-        await context.channel.send(embed=self.create_help_embed())
+    @slash_command(name='help', description="説明するわよ！")
+    async def help(self, context: ApplicationContext):
+        await context.respond(embed=self.create_help_embed())
         
     def create_help_embed(self) -> Embed:
         embed = Embed(
@@ -33,9 +22,9 @@ class BasicCommand(Cog):
             color=Color.from_rgb(0, 191, 255)
         )
         embed.set_author(name='わくぺのみなさん')
-        embed.description = ('**!con**\nVC接続コマンドです。VCに参加した状態で使用してください。\n\n'
-                             '**!dc**\nVC切断コマンドです。放置しないでね😢\n\n'
-                             '**!he**\nヘルプコマンドです。困ったらこれ。')
+        embed.description = ('**/tts connect**\nVC接続コマンドです。VCに参加した状態で使用してください。\n\n'
+                             '**/tts disconnect**\nVC切断コマンドです。放置しないでね😢\n\n'
+                             '**/help**\nヘルプコマンドです。困ったらこれ。')
 
         return embed
 
