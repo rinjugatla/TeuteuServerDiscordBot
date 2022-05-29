@@ -22,6 +22,7 @@ class TextToSpeech(Cog):
         self.voice_controller = None
         self.audio_controller = AudioManagementController(use_ogg=self.use_ogg)
         self.url = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize'
+        self.text_limit_count = 100 # 読み上げ長さ
 
     @Cog.listener(name='on_ready')
     async def on_ready(self):
@@ -156,6 +157,7 @@ class TextToSpeech(Cog):
         """URlやメンションを
         """
         validated = self.replace_url(text)
+        validated = self.limit_text(text)
         validated = self.replace_role(guild, validated)
         validated = self.replace_member(guild, validated)
         validated = self.replace_channel(guild, validated)
@@ -166,6 +168,11 @@ class TextToSpeech(Cog):
         pattern = r'[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)'
         replaced = re.sub(pattern, 'URL', text)
         return replaced
+
+    def limit_text(self, text: str) -> str:
+        """読み上げ文字数を制限
+        """
+        return text[:self.text_limit_count]
 
     def replace_role(self, guild: Guild, text: str) -> str:
         """ロールIDをロール名に修正
