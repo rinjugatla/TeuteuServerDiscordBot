@@ -157,7 +157,7 @@ class TextToSpeech(Cog):
         """URlやメンションを
         """
         validated = self.replace_url(text)
-        validated = self.limit_text(text)
+        validated = self.limit_text(validated)
         validated = self.replace_role(guild, validated)
         validated = self.replace_member(guild, validated)
         validated = self.replace_channel(guild, validated)
