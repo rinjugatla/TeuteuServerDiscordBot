@@ -166,7 +166,7 @@ class TextToSpeech(Cog):
         return validated
 
     def replace_url(self, text: str) -> str:
-        pattern = r'[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)'
+        pattern = r'https?:\/\/[\w\/:%#\$&\?\(\)~\.=\+\-]+'
         replaced = re.sub(pattern, 'URL', text)
         return replaced
 
