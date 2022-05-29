@@ -18,6 +18,7 @@ else:
 class TextToSpeech(Cog):
     def __init__(self, bot: Client):
         self.bot = bot
+        self.is_on_ready = False
         self.use_ogg = True
         self.voice_controller = None
         self.audio_controller = AudioManagementController(use_ogg=self.use_ogg)
@@ -28,7 +29,10 @@ class TextToSpeech(Cog):
 
     @Cog.listener(name='on_ready')
     async def on_ready(self):
-        self.update_gcp_info.start()
+        if not self.is_on_ready:
+            self.update_gcp_info.start()
+            self.voice_controller = VoiceClientController()
+            self.is_on_ready = True
 
     @tasks.loop(minutes=30)
     async def update_gcp_info(self):
@@ -53,9 +57,6 @@ class TextToSpeech(Cog):
         token = creds.token
         return token
 
-    async def init_audio_controller(self):
-        self.voice_controller = VoiceClientController()
-
     def is_valid(self, message: Message):
         if message.author.bot:
             return False
@@ -69,8 +70,6 @@ class TextToSpeech(Cog):
             await context.respond('ボイスチャンネルに接続して使用してください。')
             return
             
-        if self.voice_controller is None:
-            await self.init_audio_controller()
         if self.voice_controller.is_connected:
             await context.respond('すでにVCに参加済みです。')
             return
@@ -81,15 +80,11 @@ class TextToSpeech(Cog):
 
     @tts_command_group.command(name='disconnect', description='ボイスチャンネルから切断')
     async def command_disconnect(self, context: ApplicationContext):
-        if self.voice_controller is None:
-            await self.init_audio_controller()
         await self.voice_controller.disconnect()
         await context.respond('ボイスチャンネルから切断しました。')
 
     @Cog.listener(name='on_voice_state_update')
     async def on_voice_state_update(self, member: Member, before: VoiceState, after: VoiceState):
-        if self.voice_controller is None:
-            await self.init_audio_controller()
         count = self.voice_controller.member_count
         if count is None:
             return
@@ -103,8 +98,6 @@ class TextToSpeech(Cog):
         if not self.is_valid(message):
             return
 
-        if self.voice_controller is None:
-            await self.init_audio_controller()
         if not self.voice_controller.is_connected:
             return
 
