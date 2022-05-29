@@ -5,8 +5,8 @@ from controls.audio_management_contoller import AudioManagementController
 from controls.voice_client_controller import VoiceClientController
 from utilities.log import LogUtility
 from discord import ApplicationContext, Client, Guild, Message, SlashCommandGroup
-from discord.ext import commands, tasks
-from discord.ext.commands import Cog, Context
+from discord.ext import  tasks
+from discord.ext.commands import Cog
 if os.path.exists('pro.mode'):
     import secret.secret_pro as secret
     import secret.const_pro as const
