@@ -4,7 +4,7 @@ import os, json, aiohttp, base64, re
 from controls.audio_management_contoller import AudioManagementController
 from controls.voice_client_controller import VoiceClientController
 from utilities.log import LogUtility
-from discord import Client, Guild, Message
+from discord import ApplicationContext, Client, Guild, Message, SlashCommandGroup
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Context
 if os.path.exists('pro.mode'):
@@ -23,6 +23,8 @@ class TextToSpeech(Cog):
         self.audio_controller = AudioManagementController(use_ogg=self.use_ogg)
         self.url = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize'
         self.text_limit_count = 100 # 読み上げ長さ
+
+    tts_command_group = SlashCommandGroup("tts", "文字読み上げ")
 
     @Cog.listener(name='on_ready')
     async def on_ready(self):
@@ -61,33 +63,28 @@ class TextToSpeech(Cog):
             return False
         return True
 
-    def is_valid_command(self, message: Message):
-        is_valid = (message.author.id != self.bot.user.id)
-        return is_valid
-
-    @commands.command(name='con')
-    async def command_connect(self, context: Context):
-        message = context.message
-        if not self.is_valid_command(message):
-            return
+    @tts_command_group.command(name='connect', description='ボイスチャンネルに接続')
+    async def command_connect(self, context: ApplicationContext):
         if context.author.voice == None:
-            await message.channel.send('ボイスチャンネルに接続して使用してください。')
+            await context.respond('ボイスチャンネルに接続して使用してください。')
             return
             
         if self.voice_controller is None:
             await self.init_audio_controller()
         if self.voice_controller.is_connected:
-            await message.channel.send('すでにVCに参加済みです。')
+            await context.respond('すでにVCに参加済みです。')
             return
         
         voice_client = await context.author.voice.channel.connect()
         self.voice_controller.update(voice_client)
+        await context.respond('ボイスチャンネルに接続しました。')
 
-    @commands.command(name='dc')
-    async def command_disconnect(self, context: Context):
+    @tts_command_group.command(name='disconnect', description='ボイスチャンネルから切断')
+    async def command_disconnect(self, context: ApplicationContext):
         if self.voice_controller is None:
             await self.init_audio_controller()
         await self.voice_controller.disconnect()
+        await context.respond('ボイスチャンネルから切断しました。')
 
     @Cog.listener(name='on_message')
     async def on_message(self, message: Message):
