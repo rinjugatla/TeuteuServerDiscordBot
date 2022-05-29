@@ -1,7 +1,7 @@
 import asyncio
 from typing import Union
 
-from discord import VoiceClient
+from discord import VoiceChannel, VoiceClient
 from discord.player import FFmpegPCMAudio
 from controls.audio_queue_controller import AudioQueueController
 from models.voice_client_model import VoiceClientModel
@@ -72,7 +72,20 @@ class VoiceClientController(VoiceClientModel):
     def stop(self):
         self.voice_client.stop()
 
+    @property
+    def member_count(self) -> Union[int, None]:
+        """チャンネル参加人数
+        """
+        if not self.is_connected:
+            return None
+        
+        channel: VoiceChannel = self.voice_client.channel
+        count = len(channel.members)
+        return count
+
     async def disconnect(self):
+        """VCから切断
+        """
         self.__queue_controller.clear()
         if self.is_connected:
             await self.voice_client.disconnect()

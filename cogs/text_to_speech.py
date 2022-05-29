@@ -4,7 +4,7 @@ import os, json, aiohttp, base64, re
 from controls.audio_management_contoller import AudioManagementController
 from controls.voice_client_controller import VoiceClientController
 from utilities.log import LogUtility
-from discord import ApplicationContext, Client, Guild, Message, SlashCommandGroup
+from discord import ApplicationContext, Client, Guild, Member, Message, SlashCommandGroup, VoiceState
 from discord.ext import  tasks
 from discord.ext.commands import Cog
 if os.path.exists('pro.mode'):
@@ -85,6 +85,16 @@ class TextToSpeech(Cog):
             await self.init_audio_controller()
         await self.voice_controller.disconnect()
         await context.respond('ボイスチャンネルから切断しました。')
+
+    @Cog.listener(name='on_voice_state_update')
+    async def on_voice_state_update(self, member: Member, before: VoiceState, after: VoiceState):
+        if self.voice_controller is None:
+            await self.init_audio_controller()
+        count = self.voice_controller.member_count
+        if count is None:
+            return
+        if count == 1:
+            await self.voice_controller.disconnect()
 
     @Cog.listener(name='on_message')
     async def on_message(self, message: Message):
