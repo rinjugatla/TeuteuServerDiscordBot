@@ -14,6 +14,16 @@ class ApexUserRankModel(ApexUserModel):
         text += f'\n{self.season} {self.split}\nbattle: {self.battle}\narena: {self.arena}'
         return text
 
+    def __eq__(self, __o: object) -> bool:
+        is_super_same = super().__eq__(__o)
+        if not is_super_same:
+            return False
+
+        if not isinstance(__o, ApexUserRankModel):
+            return False
+        is_same = (self.battle == __o.battle and self.arena == __o.arena)
+        return is_same
+
     def __parse(self, data: dict):
         data_global = data['global'] if 'global' in data else None
         if data_global is None:

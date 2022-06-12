@@ -15,6 +15,12 @@ class ApexUserModel():
     def __str__(self) -> str:
         return f'level: {self.level}\nname: {self.name}\nuid: {self.uid}\nplatform: {self.platform}'
 
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, ApexUserModel):
+            return False
+        is_same = (self.level == __o.level and self.name == __o.name and self.uid == __o.uid and self.platform == __o.platform)
+        return is_same
+
     @property
     def level(self) -> int:
         return self.__level
