@@ -35,10 +35,11 @@ class ApexStats(Cog):
                             platform: Option(str, 'プラットフォーム名', choices=['PC', 'PS4', 'X1', 'SWITCH'], default='PC', required=True),
                             uid: Option(int, 'UID', required=False),
                             name: Option(str, 'アカウント名', required=False)):
+        await context.defer()
         if uid is None and name is None:
             await context.respond('uidまたはnameを指定してください。')
             return
-            
+
         user = await self.regist_apex_user(uid, name, platform)
         if user is None:
             await context.respond('ユーザの追加に失敗しました。')
@@ -47,6 +48,7 @@ class ApexStats(Cog):
 
     @user_command_group.command(name='show', description='ランク統計追跡ユーザを表示')
     async def apex_user_show(self, context: ApplicationContext):
+        await context.defer()
         users = self.get_registerd_users()
         if users is None or len(users) == 0:
             await context.respond(f'ユーザが登録されていません。先に[/apex_user add ~]を実行してください。')
