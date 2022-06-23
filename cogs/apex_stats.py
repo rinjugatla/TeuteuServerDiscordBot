@@ -146,12 +146,16 @@ class ApexStats(Cog):
         return refreshed_users
 
     async def get_user_by_uid(self, uid: int, platform: str) -> ApexUserRankModel:
+        """APIからユーザのランク情報を取得
+        """
         base_url = 'https://api.mozambiquehe.re/bridge?uid=:uid:&platform=:platform:&merge=true&removeMerged=true'
         url = base_url.replace(':uid:', str(uid)).replace(':platform:', platform)
         user = await self.post_user_api(url)
         return user
 
     async def get_user_by_name(self, name: str, platform: str) -> ApexUserRankModel:
+        """APIからユーザのランク情報を取得
+        """
         base_url = 'https://api.mozambiquehe.re/bridge?player=:name:&platform=:platform:&merge=true&removeMerged=true'
         url = base_url.replace(':name:', name).replace(':platform:', platform)
         user = await self.post_user_api(url)
