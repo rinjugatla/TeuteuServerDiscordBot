@@ -7,8 +7,8 @@ DELETE_APEX_USER_BY_UID = 'DELETE FROM `apex_users` WHERE `uid` = %(uid)s;'
 DELETE_APEX_USER_BY_NAME = 'DELETE FROM `apex_users` WHERE `name` = %(name)s;'
 
 SELECT_APEX_USER_RANKS = 'SELECT * FROM `apex_user_ranks` ORDER BY `id`;'
-SELECT_APEX_USER_RANK_BY_UID = 'SELECT * FROM `apex_user_ranks` WHERE `apex_user_id` = (SELECT `id` FROM `apex_users` WHERE `uid` = %(uid)s) ORDER BY `id`;'
-SELECT_APEX_USER_RANK_BY_NAME = 'SELECT * FROM `apex_user_ranks` WHERE `apex_user_id` = (SELECT `id` FROM `apex_users` WHERE `name` = %(name)s) ORDER BY `id`;'
+SELECT_APEX_USER_RANK_BY_UID = 'SELECT * FROM `apex_user_ranks` WHERE `apex_user_id` = (SELECT `id` FROM `apex_users` WHERE `uid` = %(uid)s) ORDER BY `id` LIMIT %(limit)s;'
+SELECT_APEX_USER_RANK_BY_NAME = 'SELECT * FROM `apex_user_ranks` WHERE `apex_user_id` = (SELECT `id` FROM `apex_users` WHERE `name` = %(name)s) ORDER BY `id` LIMIT %(limit)s;'
 # ユーザの値が前回から変更されていない場合は挿入なし
 INSERT_APEX_USER_RANK_BY_UID = 'INSERT `apex_user_ranks` (`apex_user_id`, `season`, `split`, `battle_score`, `battle_name`, `battle_division`, `arena_score`, `arena_name`, `arena_division`) SELECT (SELECT `id` FROM `apex_users` WHERE `uid` = %(uid)s), %(season)s, %(split)s, %(battle_score)s, %(battle_name)s, %(battle_division)s, %(arena_score)s, %(arena_name)s, %(arena_division)s WHERE NOT EXISTS (SELECT 1 FROM `apex_user_ranks` WHERE `apex_user_id` = (SELECT `id` FROM `apex_users` WHERE `uid` = %(uid)s) AND `battle_score` = %(battle_score)s AND `arena_score` = %(arena_score)s ORDER BY `id` DESC LIMIT 1);'
 INSERT_APEX_USER_RANK_BY_NAME = 'INSERT `apex_user_ranks` (`apex_user_id`, `season`, `split`, `battle_score`, `battle_name`, `battle_division`, `arena_score`, `arena_name`, `arena_division`) SELECT (SELECT `id` FROM `apex_users` WHERE `name` = %(name)s), %(season)s, %(split)s, %(battle_score)s, %(battle_name)s, %(battle_division)s, %(arena_score)s, %(arena_name)s, %(arena_division)s WHERE NOT EXISTS (SELECT 1 FROM `apex_user_ranks` WHERE `apex_user_id` = (SELECT `id` FROM `apex_users` WHERE `name` = %(name)s) AND `battle_score` = %(battle_score)s AND `arena_score` = %(arena_score)s ORDER BY `id` DESC LIMIT 1);'

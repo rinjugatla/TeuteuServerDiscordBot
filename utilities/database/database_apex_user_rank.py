@@ -11,15 +11,15 @@ class DatabaseApexUserRankUrility(DatabaseUtility):
             result = cursor.fetchall()
             return result
 
-    def select_by_user_uid(self, uid: int) -> list[dict]:
+    def select_by_user_uid(self, uid: int, limit: int = 100) -> list[dict]:
         with self.connection.cursor() as cursor:
-            cursor.execute(sql.SELECT_APEX_USER_RANK_BY_APEX_UESR_UID, {'uid': uid})
+            cursor.execute(sql.SELECT_APEX_USER_RANK_BY_UID, {'uid': uid, 'limit': limit})
             result = cursor.fetchall()
             return result
 
-    def select_by_user_name(self, name: int) -> list[dict]:
+    def select_by_user_name(self, name: int, limit: int = 100) -> list[dict]:
         with self.connection.cursor() as cursor:
-            cursor.execute(sql.SELECT_APEX_USER_RANK_BY_APEX_USER_NAME, {'name': name})
+            cursor.execute(sql.SELECT_APEX_USER_RANK_BY_NAME, {'name': name, 'limit': limit})
             result = cursor.fetchall()
             return result
     
