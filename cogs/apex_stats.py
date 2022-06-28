@@ -1,12 +1,12 @@
-import os, aiohttp, json
+import os
 from typing import Union
 from discord import ApplicationContext, Client, Message, SlashCommandGroup
 from discord.commands import Option
 from discord.ext.commands import Cog
-from models.bot.apex_user_model import ApexUserModel
 from models.bot.apex_user_rank_model import ApexUserRankModel
 from models.database.apex_user_database_model import ApexUserDatabaseModel
 from models.database.apex_user_rank_database_model import ApexUserRankDatabaseModel
+from utilities.apis.apex_legends_status_api import ApexLegendsStatusAPI
 from utilities.database.database_apex_user import DatabaseApexUserUrility
 from utilities.database.database_apex_user_rank import DatabaseApexUserRankUrility
 from utilities.log import LogUtility
@@ -114,9 +114,9 @@ class ApexStats(Cog):
         
         user = None
         if not uid is None:
-            user = await self.get_user_by_uid(uid, platform)
+            user = await ApexLegendsStatusAPI.get_user_by_uid(uid, platform)
         elif not name is None:
-            user = await self.get_user_by_name(name, platform)
+            user = await ApexLegendsStatusAPI.get_user_by_name(name, platform)
 
         if user is None:
             return None
@@ -141,7 +141,7 @@ class ApexStats(Cog):
             user: ApexUserDatabaseModel = database.select_by_uid(uid=uid)
 
         rank_histories = None
-        refreshed_user = await self.get_user_by_uid(user.uid, user.platform)
+        refreshed_user = await ApexLegendsStatusAPI.get_user_by_uid(user.uid, user.platform)
         with DatabaseApexUserRankUrility() as database:
             database.insert_rank_by_uid(refreshed_user)
             rank_histories = database.select_by_user_uid(user.uid, 2)
@@ -161,7 +161,7 @@ class ApexStats(Cog):
             return None
 
         rank_histories = None
-        refreshed_users = [await self.get_user_by_uid(uid=user.uid, platform=user.platform) for user in users]
+        refreshed_users = [await ApexLegendsStatusAPI.get_user_by_uid(uid=user.uid, platform=user.platform) for user in users]
         with DatabaseApexUserRankUrility() as database:
             database.insert_ranks_by_uid(refreshed_users)
             uids = [user.uid for user in users]
@@ -213,47 +213,6 @@ class ApexStats(Cog):
             if user_histories is not None:
                 users_histories.append(user_histories)
         return users_histories
-
-    async def get_user_by_uid(self, uid: int, platform: str) -> ApexUserRankModel:
-        """APIからユーザのランク情報を取得
-        """
-        base_url = 'https://api.mozambiquehe.re/bridge?uid=:uid:&platform=:platform:&merge=true&removeMerged=true'
-        url = base_url.replace(':uid:', str(uid)).replace(':platform:', platform)
-        user = await self.post_user_api(url)
-        return user
-
-    async def get_user_by_name(self, name: str, platform: str) -> ApexUserRankModel:
-        """APIからユーザのランク情報を取得
-        """
-        base_url = 'https://api.mozambiquehe.re/bridge?player=:name:&platform=:platform:&merge=true&removeMerged=true'
-        url = base_url.replace(':name:', name).replace(':platform:', platform)
-        user = await self.post_user_api(url)
-        return user
-
-    async def post_user_api(self, url: str) -> ApexUserRankModel:
-        """ApexLegendsUserStatus
-            https://apexlegendsapi.com/#query-by-name
-            https://apexlegendsapi.com/#query-by-uid
-
-        Args:
-            url (str): エンドポイント
-
-        Returns:
-            ApexUserRankModel: ランク情報を含むユーザ情報
-        """
-        async with aiohttp.ClientSession() as session:
-            headers = {
-                'Content-Type': 'application/json;',
-                'Authorization': secret.APEX_TOKEN
-            }
-            async with session.post(url=url, headers=headers) as response:
-                if response.status != 200:
-                    return None
-
-                # header: Content-Type: text/plain;charset=UTF-8なのでresponse.json()は利用不可
-                data = json.loads(await response.text())
-                user = ApexUserRankModel(data)
-                return user
 
 def setup(bot: Client):
     return bot.add_cog(ApexStats(bot))
