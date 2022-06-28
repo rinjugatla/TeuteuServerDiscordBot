@@ -119,10 +119,10 @@ class ApexUserRankModel(ApexUserModel):
         embed.add_field(name='UID', value=self.uid)
         embed.add_field(name='バトルロワイヤル', value=f'{self.battle_name} {self.battle_division}')
         embed.add_field(name='スコア', value=self.battle_score)
-        embed.add_field(name='前回からの変化', value='+10')
+        embed.add_field(name='前回からの変化', value='-')
         embed.add_field(name='アリーナ', value=f'{self.arena_name} {self.arena_division}')
         embed.add_field(name='スコア', value=self.arena_score)
-        embed.add_field(name='前回からの変化', value='+-0')
+        embed.add_field(name='前回からの変化', value='-')
         return embed
 
     @property
