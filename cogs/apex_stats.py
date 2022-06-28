@@ -74,7 +74,7 @@ class ApexStats(Cog):
         await context.respond(embed=user.embed)
 
     @rank_command_group.command(name='show_all', description='全員のランク統計を表示')
-    async def apex_rank_show_one(self, context: ApplicationContext,
+    async def apex_rank_show_all(self, context: ApplicationContext,
                             detail: Option(bool, '詳細な情報を表示するか', default=False, required=False)):
         await context.defer()
         users_rank = await self.refresh_apex_users_rank()
