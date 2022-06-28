@@ -77,8 +77,8 @@ class ApexStats(Cog):
     async def apex_rank_show_one(self, context: ApplicationContext,
                             detail: Option(bool, '詳細な情報を表示するか', default=False, required=False)):
         await context.defer()
-        users = await self.refresh_apex_user_ranks()
-        embeds = [user.embed for user in users]
+        users_rank = await self.refresh_apex_users_rank()
+        embeds = [user.embed for user in users_rank]
         if embeds is None or len(embeds) == 0:
             await context.respond('ユーザが登録されていません。先に[/apex_user add ~]を実行してください。')
             return
@@ -140,7 +140,29 @@ class ApexStats(Cog):
             return refreshed_user
         ranks = self.calc_user_rank_changes(rank_histories)
         return ranks[-1]
+    
+    async def refresh_apex_users_rank(self) -> Union[list[ApexUserRankModel], list[ApexUserRankDatabaseModel], None]:
+        """データベースに登録されている追跡対象のユーザすべてのランク情報を取得して登録
+        """
+        users = self.get_registerd_users()
+        if users is None or len(users) == 0:
+            return None
+
+        rank_histories = None
+        refreshed_users = [await self.get_user_by_uid(uid=user.uid, platform=user.platform) for user in users]
+        with DatabaseApexUserRankUrility() as database:
+            database.insert_ranks_by_uid(refreshed_users)
+            uids = [user.uid for user in users]
+            rank_histories = database.select_by_users_uid(uids, 2)
+
+        if rank_histories is None:
+            return refreshed_users
         
+        # 最新のランク情報のみ抽出
+        users_ranks = self.calc_users_ranks_changes(rank_histories)
+        users_rank = [users_rank[-1] for users_rank in users_ranks]
+        return users_rank
+
     def calc_user_rank_changes(self, ranks: list[dict]) -> Union[list[ApexUserRankDatabaseModel], None]:
         """差分を含むランク情報を計算
 
@@ -163,17 +185,20 @@ class ApexStats(Cog):
             histories[i + 1].set_change(histories[i])
         return histories
 
-    async def refresh_apex_user_ranks(self) -> Union[list[ApexUserRankModel], None]:
-        """データベースに登録されている追跡対象のユーザすべてのランク情報を取得して登録
-        """
-        users = self.get_registerd_users()
-        if users is None or len(users) == 0:
-            return None
+    def calc_users_ranks_changes(self, users_ranks: list[list[dict]]) -> Union[list[list[ApexUserDatabaseModel]], None]:
+        """差分を含むランク情報を計算
 
-        refreshed_users = [await self.get_user_by_uid(uid=user.uid, platform=user.platform) for user in users]
-        with DatabaseApexUserRankUrility() as database:
-            database.insert_ranks_by_uid(refreshed_users)
-        return refreshed_users
+        Args:
+            users_ranks (list[list[dict]]): 複数のユーザのランク情報
+
+        Returns:
+            Union[list[list[ApexUserDatabaseModel]], None]: 差分を含むランク情報
+        """
+        users_histories = []
+        for user_ranks in users_ranks:
+            user_histories = self.calc_user_rank_changes(user_ranks)
+            users_histories.append(user_histories)
+        return users_histories
 
     async def get_user_by_uid(self, uid: int, platform: str) -> ApexUserRankModel:
         """APIからユーザのランク情報を取得
