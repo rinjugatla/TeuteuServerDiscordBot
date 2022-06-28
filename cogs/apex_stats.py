@@ -183,7 +183,7 @@ class ApexStats(Cog):
         if length == 0:
             return None
         elif length == 1:
-            return [ranks[0]]
+            return [ApexUserRankDatabaseModel(ranks[0])]
         
         histories: list[ApexUserRankDatabaseModel] = []
         for rank in ranks:
