@@ -242,7 +242,11 @@ class ApexStats(Cog):
             ApexUserRankModel: ランク情報を含むユーザ情報
         """
         async with aiohttp.ClientSession() as session:
-            async with session.post(url=url, headers=self.get_api_header()) as response:
+            headers = {
+                'Content-Type': 'application/json;',
+                'Authorization': secret.APEX_TOKEN
+            }
+            async with session.post(url=url, headers=headers) as response:
                 if response.status != 200:
                     return None
 
@@ -250,12 +254,6 @@ class ApexStats(Cog):
                 data = json.loads(await response.text())
                 user = ApexUserRankModel(data)
                 return user
-
-    def get_api_header(self) -> dict:
-        return {
-            'Content-Type': 'application/json;',
-            'Authorization': secret.APEX_TOKEN
-        }
 
 def setup(bot: Client):
     return bot.add_cog(ApexStats(bot))
