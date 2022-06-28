@@ -3,7 +3,7 @@ from models.database.apex_user_database_model import ApexUserDatabaseModel
 
 class ApexUserRankDatabaseModel(ApexUserDatabaseModel):
     def __init__(self, rank: dict):
-        super().__parse(rank)
+        super().__init__(rank)
         self.__parse(rank)
 
     def __str__(self) -> str:
