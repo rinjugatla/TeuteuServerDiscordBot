@@ -71,6 +71,9 @@ class ApexStats(Cog):
                             detail: Option(bool, '詳細な情報を表示するか', default=False, required=False)):
         await context.defer()
         user = await self.refresh_apex_user_rank(uid)
+        if user is None:
+            await context.respond(f'ユーザ情報({uid})の取得に失敗しました。')
+            return
         await context.respond(embed=user.embed)
 
     @rank_command_group.command(name='show_all', description='全員のランク統計を表示')
@@ -146,6 +149,8 @@ class ApexStats(Cog):
         if rank_histories is None:
             return refreshed_user
         ranks = self.calc_user_rank_changes(rank_histories)
+        if ranks is None:
+            return None
         return ranks[-1]
     
     async def refresh_apex_users_rank(self) -> Union[list[ApexUserRankModel], list[ApexUserRankDatabaseModel], None]:
@@ -181,6 +186,7 @@ class ApexStats(Cog):
         """
         length = len(ranks)
         if length == 0:
+            LogUtility.print_red('ユーザランク情報の取得に失敗しました。')
             return None
         elif length == 1:
             return [ApexUserRankDatabaseModel(ranks[0])]
@@ -204,7 +210,8 @@ class ApexStats(Cog):
         users_histories = []
         for user_ranks in users_ranks:
             user_histories = self.calc_user_rank_changes(user_ranks)
-            users_histories.append(user_histories)
+            if user_histories is not None:
+                users_histories.append(user_histories)
         return users_histories
 
     async def get_user_by_uid(self, uid: int, platform: str) -> ApexUserRankModel:
