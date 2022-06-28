@@ -82,7 +82,14 @@ class ApexStats(Cog):
         if embeds is None or len(embeds) == 0:
             await context.respond('ユーザが登録されていません。先に[/apex_user add ~]を実行してください。')
             return
-        await context.respond(embeds=embeds)
+        
+        limit = 10 # embedは10個まで
+        if len(embeds) <= limit:
+            await context.respond(embeds=embeds)
+            return
+        
+        for i in range(0, len(embeds), limit):
+            await context.respond(embeds=embeds[i: i+limit])
 
     @rank_command_group.command(name='refresh', description='ランク情報を強制的に更新する')
     async def apex_rank_refresh(self, context: ApplicationContext):
