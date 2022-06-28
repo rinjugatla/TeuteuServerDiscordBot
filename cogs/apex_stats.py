@@ -6,6 +6,7 @@ from discord.ext.commands import Cog
 from models.bot.apex_user_model import ApexUserModel
 from models.bot.apex_user_rank_model import ApexUserRankModel
 from models.database.apex_user_database_model import ApexUserDatabaseModel
+from models.database.apex_user_rank_database_model import ApexUserRankDatabaseModel
 from utilities.database.database_apex_user import DatabaseApexUserUrility
 from utilities.database.database_apex_user_rank import DatabaseApexUserRankUrility
 from utilities.log import LogUtility
@@ -128,10 +129,39 @@ class ApexStats(Cog):
         user = None
         with DatabaseApexUserUrility() as database:
             user: ApexUserDatabaseModel = database.select_by_uid(uid=uid)
+
+        rank_histories = None
         refreshed_user = await self.get_user_by_uid(user.uid, user.platform)
         with DatabaseApexUserRankUrility() as database:
             database.insert_rank_by_uid(refreshed_user)
-        return refreshed_user
+            rank_histories = database.select_by_user_uid(user.uid, 2)
+
+        if rank_histories is None:
+            return refreshed_user
+        ranks = self.calc_user_rank_changes(rank_histories)
+        return ranks[-1]
+        
+    def calc_user_rank_changes(self, ranks: list[dict]) -> Union[list[ApexUserRankDatabaseModel], None]:
+        """差分を含むランク情報を計算
+
+        Args:
+            ranks (list[dict]): ランク情報
+
+        Returns:
+            Union[list[ApexUserRankDatabaseModel], None]: 差分を含むランク情報
+        """
+        length = len(ranks)
+        if length == 0:
+            return None
+        elif length == 1:
+            return [ranks[0]]
+        
+        histories: list[ApexUserRankDatabaseModel] = []
+        for rank in ranks:
+            histories.append(ApexUserRankDatabaseModel(rank))
+        for i in range(len(histories) - 1):
+            histories[i + 1].set_change(histories[i])
+        return histories
 
     async def refresh_apex_user_ranks(self) -> Union[list[ApexUserRankModel], None]:
         """データベースに登録されている追跡対象のユーザすべてのランク情報を取得して登録
