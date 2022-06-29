@@ -275,3 +275,25 @@ In options.3: Required options must be placed before non-required options
 --                     platform: Option(str, 'プラットフォーム名', choice=['PC', 'PS4', 'X1', 'SWITCH'], required=True)
                         ):
  ```
+
+
+## 起動時に`discord.errors.HTTPException: 405 Method Not Allowed (error code: 0): 405: Method Not Allowed`エラー発生
+
+* バージョン `bb5b30df4f9bd17ddc075630881de2ef4a7fbd13`
+
+```log
+Ignoring exception in on_connect
+Traceback (most recent call last):
+  File "C:\workspace\discord\TeuteuServerDiscordBotPro\venv\lib\site-packages\discord\client.py", line 382, in _run_event
+    await coro(*args, **kwargs)
+  File "C:\workspace\discord\TeuteuServerDiscordBotPro\venv\lib\site-packages\discord\bot.py", line 1147, in on_connect
+    await self.sync_commands()
+  File "C:\workspace\discord\TeuteuServerDiscordBotPro\venv\lib\site-packages\discord\bot.py", line 770, in sync_commands
+    await self._bot.http.bulk_upsert_command_permissions(self._bot.user.id, guild_id, guild_cmd_perms)
+  File "C:\workspace\discord\TeuteuServerDiscordBotPro\venv\lib\site-packages\discord\http.py", line 359, in request
+    raise HTTPException(response, data)
+discord.errors.HTTPException: 405 Method Not Allowed (error code: 0): 405: Method Not Allowed
+```
+
+* 対処
+  pycordのバージョンを`2.0.0b7`から`2.0.0rc1`に更新
