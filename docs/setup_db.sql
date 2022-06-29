@@ -47,7 +47,7 @@ CREATE TABLE `apex_users` (
 
 CREATE TABLE `apex_user_ranks` (
   `id` int(11) NOT NULL,
-  `apex_user_id` int(11) NOT NULL,
+  `uid` bigint(20) NOT NULL,
   `season` int(11) NOT NULL,
   `split` int(11) NOT NULL,
   `battle_score` int(11) NOT NULL,
@@ -149,16 +149,6 @@ ALTER TABLE `tts_files`
 ALTER TABLE `tts_words`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
---
--- ダンプしたテーブルの制約
---
-
---
--- テーブルの制約 `apex_user_ranks`
---
-ALTER TABLE `apex_user_ranks`
-  ADD CONSTRAINT `ref_apex_users_id` FOREIGN KEY (`apex_user_id`) REFERENCES `apex_users` (`id`);
-COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
