@@ -110,9 +110,9 @@ class ApexStats(Cog):
         for i in range(0, len(embeds), limit):
             await context.respond(embeds=embeds[i: i+limit])
 
-    @rank_command_group.command(name='refresh', description='ランク情報を強制的に更新する')
-    async def apex_rank_refresh(self, context: ApplicationContext):
-        pass
+    # @rank_command_group.command(name='refresh', description='ランク情報を強制的に更新する')
+    # async def apex_rank_refresh(self, context: ApplicationContext):
+    #     pass
 
     async def regist_apex_user(self, uid: int, name: str, platform: str) -> Union[ApexUserRankModel, None]:
         """ユーザ情報をDBに登録
