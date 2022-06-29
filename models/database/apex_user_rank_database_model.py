@@ -13,7 +13,6 @@ class ApexUserRankDatabaseModel(ApexUserDatabaseModel):
 
     def __parse(self, rank: dict):
         self.__id: int = rank['id']
-        self.__apex_user_id: int = rank['apex_user_id']
         self.__season: int = rank['season']
         self.__split: int = rank['split']
         self.__battle = {
