@@ -40,8 +40,12 @@ class ApexStats(Cog):
         if uid is None and name is None:
             await context.respond('uidまたはnameを指定してください。')
             return
+        try:
+            user = await self.regist_apex_user(uid, name, platform)
+        except Exception as ex: 
+            await context.respond(str(ex))
+            return
 
-        user = await self.regist_apex_user(uid, name, platform)
         if user is None:
             await context.respond('ユーザの追加に失敗しました。')
         else:
@@ -129,14 +133,16 @@ class ApexStats(Cog):
             return None
         
         user = None
-        if not uid is None:
-            user = await ApexLegendsStatusAPI.get_user_by_uid(uid, platform)
-        elif not name is None:
-            user = await ApexLegendsStatusAPI.get_user_by_name(name, platform)
+        try:
+            if not uid is None:
+                user = await ApexLegendsStatusAPI.get_user_by_uid(uid, platform)
+            elif not name is None:
+                user = await ApexLegendsStatusAPI.get_user_by_name(name, platform)
+        except:
+            raise
 
         if user is None:
             return None
-
         with DatabaseApexUserUrility() as database:
             database.update_by_uid(user)
             return user

@@ -49,5 +49,9 @@ class ApexLegendsStatusAPI():
 
                 # header: Content-Type: text/plain;charset=UTF-8なのでresponse.json()は利用不可
                 data = json.loads(await response.text())
+                if 'Error' in data:
+                    # 存在しないユーザを指定した場合などに発生
+                    raise ValueError(data['Error'])
+
                 user = ApexUserRankModel(data)
                 return user
