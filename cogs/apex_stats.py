@@ -76,7 +76,9 @@ class ApexStats(Cog):
         
         # 削除処理を追加
         user = [user for user in users if user.uid == uid][0]
-        await context.respond(f'{user}({uid})のランク統計追跡を取り消しました。')
+        with DatabaseApexUserUrility() as database:
+            database.delete_by_uid(user)
+        await context.respond(f'{user.name}({uid})のランク統計追跡を取り消しました。')
 
 
     @rank_command_group.command(name='show_one', description='ランク統計を表示')
