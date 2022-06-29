@@ -78,7 +78,6 @@ class ApexStats(Cog):
             await context.respond(f'ユーザ({uid})が登録されていません。')
             return
         
-        # 削除処理を追加
         user = [user for user in users if user.uid == uid][0]
         with DatabaseApexUserUrility() as database:
             database.delete_by_uid(user)
