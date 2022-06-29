@@ -36,12 +36,12 @@ class DatabaseApexUserUrility(DatabaseUtility):
         self.commit()
 
     # DELETE
-    def delete_by_uid(self, apex_user: Union[ApexUserModel, ApexUserRankModel]):
+    def delete_by_uid(self, apex_user: Union[ApexUserModel, ApexUserRankModel, ApexUserDatabaseModel]):
         with self.connection.cursor() as cursor:
             cursor.execute(sql.DELETE_APEX_USER_BY_UID, apex_user.database_dict)
         self.commit()
 
-    def delete_name(self, apex_user: Union[ApexUserModel, ApexUserRankModel]):
+    def delete_name(self, apex_user: Union[ApexUserModel, ApexUserRankModel, ApexUserDatabaseModel]):
         with self.connection.cursor() as cursor:
             cursor.execute(sql.DELETE_APEX_USER_BY_NAME, apex_user.database_dict)
         self.commit()
