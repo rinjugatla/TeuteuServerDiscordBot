@@ -11,6 +11,13 @@ class ApexUserRankDatabaseModel(ApexUserDatabaseModel):
     def __str__(self) -> str:
         return '未実装'
 
+    def __eq__(self, __o: object) -> bool:
+        if isinstance(__o, ApexUserRankDatabaseModel):
+            is_same = (self.uid == __o.uid and 
+                    self.battle_score == __o.battle_score and 
+                    self.arena_score == __o.arena_score)
+            return is_same
+
     def __parse(self, rank: dict):
         self.__id: int = rank['id']
         self.__season: int = rank['season']
