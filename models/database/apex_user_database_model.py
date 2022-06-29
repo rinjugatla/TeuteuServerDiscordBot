@@ -34,3 +34,13 @@ class ApexUserDatabaseModel():
     @property
     def platform(self) -> int:
         return self.__platform
+
+    @property
+    def database_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'level': self.level,
+            'name': self.name,
+            'uid': self.uid,
+            'platform': self.platform
+        }
