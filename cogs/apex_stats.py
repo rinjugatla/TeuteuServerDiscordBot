@@ -21,8 +21,8 @@ class ApexStats(Cog):
     def __init__(self, bot: Client):
         self.bot = bot
 
-    user_command_group = SlashCommandGroup("apex_user", "ランクポイント統計を追跡するプレイヤの操作")
-    rank_command_group = SlashCommandGroup("apex_rank", "ランクポイントの統計の操作")
+    user_command_group = SlashCommandGroup("apex_user", "ランク情報を追跡するプレイヤの操作")
+    rank_command_group = SlashCommandGroup("apex_rank", "ランク情報の操作")
     
     def is_valid(self, message: Message):
         if message.author.bot:
@@ -31,7 +31,7 @@ class ApexStats(Cog):
             return False
         return True
 
-    @user_command_group.command(name='add', description='ランク統計追跡ユーザを追加')
+    @user_command_group.command(name='add', description='ランク情報追跡ユーザを追加')
     async def apex_user_add(self, context: ApplicationContext,
                             platform: Option(str, 'プラットフォーム名', choices=['PC', 'PS4', 'X1', 'SWITCH'], default='PC', required=True),
                             uid: Option(int, 'UID', required=False),
@@ -45,9 +45,9 @@ class ApexStats(Cog):
         if user is None:
             await context.respond('ユーザの追加に失敗しました。')
         else:
-            await context.respond(f'ユーザ{user.name}({user.uid})を追加しました。')
+            await context.respond(f'{user.name}({user.uid})のランク情報の追跡を開始します。')
 
-    @user_command_group.command(name='show', description='ランク統計追跡ユーザを表示')
+    @user_command_group.command(name='show', description='ランク情報追跡ユーザ一覧を表示')
     async def apex_user_show(self, context: ApplicationContext):
         await context.defer()
         users = self.get_registerd_users()
@@ -59,7 +59,7 @@ class ApexStats(Cog):
         users_preview = '\n'.join(users_summary_list)
         await context.respond(f'登録済みのユーザ\n{users_preview}')
 
-    @user_command_group.command(name='remove', description='ランク統計の追跡を取り消し')
+    @user_command_group.command(name='remove', description='ランク情報の追跡を取り消し')
     async def apex_user_remove(self, context: ApplicationContext,
                                 uid: Option(int, 'UID', required=True)):
         await context.defer()
@@ -71,17 +71,17 @@ class ApexStats(Cog):
         regsted_uids = [user.uid for user in users]
         is_registerd = (uid in regsted_uids)
         if not is_registerd:
-            await context.respond(f'UID: {uid}は登録されていません。')
+            await context.respond(f'ユーザ({uid})が登録されていません。')
             return
         
         # 削除処理を追加
         user = [user for user in users if user.uid == uid][0]
         with DatabaseApexUserUrility() as database:
             database.delete_by_uid(user)
-        await context.respond(f'{user.name}({uid})のランク統計追跡を取り消しました。')
+        await context.respond(f'{user.name}({uid})のランク情報追跡を取り消しました。')
 
 
-    @rank_command_group.command(name='show_one', description='ランク統計を表示')
+    @rank_command_group.command(name='show_one', description='ランク情報を表示')
     async def apex_rank_show_one(self, context: ApplicationContext,
                             uid: Option(int, 'uid', required=True),
                             detail: Option(bool, '詳細な情報を表示するか', default=False, required=False)):
@@ -92,7 +92,7 @@ class ApexStats(Cog):
             return
         await context.respond(embed=user.embed)
 
-    @rank_command_group.command(name='show_all', description='全員のランク統計を表示')
+    @rank_command_group.command(name='show_all', description='全員のランク情報を表示')
     async def apex_rank_show_all(self, context: ApplicationContext,
                             detail: Option(bool, '詳細な情報を表示するか', default=False, required=False)):
         await context.defer()
