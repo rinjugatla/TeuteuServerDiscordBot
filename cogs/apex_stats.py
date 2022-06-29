@@ -1,6 +1,7 @@
 import os
 from typing import Union
-from discord import ApplicationContext, Client, Message, SlashCommandGroup
+from discord import ApplicationContext, Client, Message, SlashCommandGroup, TextChannel
+from discord.ext import tasks
 from discord.commands import Option
 from discord.ext.commands import Cog
 from models.bot.apex_user_rank_model import ApexUserRankModel
@@ -20,6 +21,70 @@ else:
 class ApexStats(Cog):
     def __init__(self, bot: Client):
         self.bot = bot
+        self.updating_user_ranks = False
+        self.prev_update_user_ranks : list[ApexUserRankDatabaseModel] = None
+        self.post_channel : TextChannel = None
+
+    @Cog.listener(name='on_ready')
+    async def on_ready(self):
+        self.post_channel = self.bot.get_channel(const.APEX_RANK_CHANNEL)
+        self.update_user_ranks.start()
+
+    @tasks.loop(minutes=2)
+    async def update_user_ranks(self):
+        """一定時間毎にランク情報を取得、更新のあったユーザのランク情報のみ表示
+        """
+        # 多重実行回避
+        if self.updating_user_ranks:
+            return
+
+        LogUtility.print_green('ランク情報の定期取得を開始します。')
+        self.updating_user_ranks = True
+
+        users_rank = None
+        try:
+            users_rank = await self.refresh_apex_users_rank()
+        except Exception as ex:
+            LogUtility.print_red(str(ex))
+
+        self.updating_user_ranks = False
+        if users_rank is None:
+            return
+        
+        changed_users_rank = self.get_changed_user_ranks(users_rank)
+        if changed_users_rank is None or len(changed_users_rank) == 0:
+            return
+
+        embeds = [user.embed for user in changed_users_rank]
+
+        limit = 10 # embedは10個まで
+        if len(embeds) <= limit:
+            await self.post_channel.send(embeds=embeds)
+            return
+
+        for i in range(0, len(embeds), limit):
+            await self.post_channel.send(embeds=embeds[i: i+limit])
+
+    def get_changed_user_ranks(self, users_rank: list[ApexUserRankDatabaseModel]) -> list[ApexUserRankDatabaseModel]:
+        """前回と異なるランク情報のみを取得
+
+        Args:
+            users_rank (list[ApexUserRankDatabaseModel]): 今回のユーザランク情報
+
+        Returns:
+            list[ApexUserRankDatabaseModel]: 更新のあったランク情報
+        """
+        if self.prev_update_user_ranks is None:
+            self.store_prev_users_rank(users_rank)
+            return users_rank
+        
+        changed_users_rank = [user for user in users_rank if not user in self.prev_update_user_ranks]
+        self.store_prev_users_rank(users_rank)
+
+        return changed_users_rank
+
+    def store_prev_users_rank(self, users_rank: list[ApexUserRankDatabaseModel]):
+        self.prev_update_user_ranks = users_rank
 
     user_command_group = SlashCommandGroup("apex_user", "ランク情報を追跡するプレイヤの操作")
     rank_command_group = SlashCommandGroup("apex_rank", "ランク情報の操作")
@@ -104,6 +169,8 @@ class ApexStats(Cog):
         if embeds is None or len(embeds) == 0:
             await context.respond('ユーザが登録されていません。先に[/apex_user add ~]を実行してください。')
             return
+        
+        self.store_prev_users_rank(users_rank)
         
         limit = 10 # embedは10個まで
         if len(embeds) <= limit:
