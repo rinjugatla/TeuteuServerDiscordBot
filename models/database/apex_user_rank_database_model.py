@@ -78,7 +78,7 @@ class ApexUserRankDatabaseModel(ApexUserDatabaseModel):
         elif change > 0:
             return f'+{change}'
         else:
-            return f'-{change}'
+            return f'{change}'
 
     @property
     def battle_stats(self) -> str:
@@ -113,7 +113,7 @@ class ApexUserRankDatabaseModel(ApexUserDatabaseModel):
         elif change > 0:
             return f'+{change}'
         else:
-            return f'-{change}'
+            return f'{change}'
 
     @property
     def arena_stats(self) -> str:
