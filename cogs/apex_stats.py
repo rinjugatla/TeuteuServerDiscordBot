@@ -59,12 +59,26 @@ class ApexStats(Cog):
         users_preview = '\n'.join(users_summary_list)
         await context.respond(f'登録済みのユーザ\n{users_preview}')
 
-    # 未実装
-    # @user_command_group.command(name='remove', description='ランク統計の追跡を取り消し')
-    # async def apex_user_remove(self, context: ApplicationContext,
-    #                             uid: Option(int, 'UID', required=True)):
-    #     pass
-    
+    @user_command_group.command(name='remove', description='ランク統計の追跡を取り消し')
+    async def apex_user_remove(self, context: ApplicationContext,
+                                uid: Option(int, 'UID', required=True)):
+        await context.defer()
+        users = self.get_registerd_users()
+        if users is None or len(users) == 0:
+            await context.respond(f'ユーザが登録されていません。先に[/apex_user add ~]を実行してください。')
+            return
+
+        regsted_uids = [user.uid for user in users]
+        is_registerd = (uid in regsted_uids)
+        if not is_registerd:
+            await context.respond(f'UID: {uid}は登録されていません。')
+            return
+        
+        # 削除処理を追加
+        user = [user for user in users if user.uid == uid][0]
+        await context.respond(f'{user}({uid})のランク統計追跡を取り消しました。')
+
+
     @rank_command_group.command(name='show_one', description='ランク統計を表示')
     async def apex_rank_show_one(self, context: ApplicationContext,
                             uid: Option(int, 'uid', required=True),
