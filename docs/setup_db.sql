@@ -105,7 +105,7 @@ ALTER TABLE `apex_users`
 --
 ALTER TABLE `apex_user_ranks`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_01` (`apex_user_id`);
+  ADD KEY `idx_01` (`uid`);
 
 --
 -- テーブルのインデックス `tts_files`
