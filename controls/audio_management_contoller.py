@@ -28,8 +28,7 @@ class AudioManagementController():
         local_files = glob.glob(f'{self.__audio_dir}/*')
         for file in local_files:
             self.__file_controller.append(AudioFileModel(filename=file))
-        LogUtility.print('ローカルの音声ファイルを取得', True)
-        LogUtility.print(self.__file_controller)
+        LogUtility.print(f'ローカルの音声ファイルを取得: {self.__file_controller.file_count}ファイル', True)
 
     def get_filepath(self, file: AudioFileModel) -> Union[str, None]:
         if file is None or len(file.filename) == 0:

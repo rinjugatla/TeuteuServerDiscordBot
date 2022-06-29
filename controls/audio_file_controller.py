@@ -12,6 +12,12 @@ class AudioFileController():
             text += f'{file}\n'
         return f'{text}'
 
+    @property
+    def file_count(self) -> int:
+        if self.__files is None:
+            return -1
+        return len(self.__files)
+
     def to_list(self) -> list[AudioFileModel]:
         return list(self.__files)
 
