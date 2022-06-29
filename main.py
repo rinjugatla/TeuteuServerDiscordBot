@@ -13,6 +13,7 @@ class DiscordBot():
         
         self.bot = Bot(command_prefix = const.COMMAND_PREFIX, 
             intents = self.create_intents(),
+            debug_guilds=const.DEBUG_GUILDS,
             enable_debug_events = is_debug)
         
     def create_intents(self) -> Intents:
@@ -24,7 +25,7 @@ class DiscordBot():
     def start(self):
         for name in const.HOOL_MODULES_FIXED:
             self.bot.load_extension(name)
-        self.bot.run(secret.TOKEN)
+        self.bot.run(secret.BOT_TOKEN)
 
 bot = DiscordBot()
 bot.start()
