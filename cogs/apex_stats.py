@@ -58,6 +58,10 @@ class ApexStats(Cog):
         if changed_users_rank is None or len(changed_users_rank) == 0:
             return
 
+        # 初回実行時は出力しない
+        if not self.is_on_ready:
+            return
+
         embeds = [user.embed for user in changed_users_rank]
         limit = 10 # embedは10個まで
         if len(embeds) <= limit:
