@@ -31,7 +31,7 @@ class ApexStats(Cog):
         if not self.is_on_ready:
             self.post_channel = self.bot.get_channel(const.APEX_RANK_CHANNEL)
             self.update_user_ranks.start()
-            self.done_ready = True
+            self.is_on_ready = True
 
     @tasks.loop(minutes=2)
     async def update_user_ranks(self):
