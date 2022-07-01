@@ -132,15 +132,15 @@ class ApexUserRankDatabaseModel(ApexUserDatabaseModel):
             title=f'{self.name}',
             color=self.embed_color,
         )
-        embed.add_field(name='プラットフォーム', value=self.platform)
+        embed.add_field(name='プラフォ', value=self.platform)
         embed.add_field(name='レベル', value=self.level)
         embed.add_field(name='UID', value=self.uid)
-        embed.add_field(name='バトルロワイヤル', value=f'{self.battle_name} {self.battle_division}')
+        embed.add_field(name='バトロワ', value=f'{self.battle_name} {self.battle_division}')
         embed.add_field(name='スコア', value=self.battle_score)
-        embed.add_field(name='前回からの変化', value=self.battle_change_str)
+        embed.add_field(name='変動', value=self.battle_change_str)
         embed.add_field(name='アリーナ', value=f'{self.arena_name} {self.arena_division}')
         embed.add_field(name='スコア', value=self.arena_score)
-        embed.add_field(name='前回からの変化', value=self.arena_change_str)
+        embed.add_field(name='変動', value=self.arena_change_str)
         return embed
 
     @property
