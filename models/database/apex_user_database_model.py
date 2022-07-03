@@ -14,6 +14,7 @@ class ApexUserDatabaseModel():
         self.__name: str = user['name']
         self.__uid: int = user['uid']
         self.__platform: str = user['platform']
+        self.__icon_url: str = user['icon_url']
 
     @property
     def id(self) -> int:
@@ -24,7 +25,7 @@ class ApexUserDatabaseModel():
         return self.__level
     
     @property
-    def name(self) -> int:
+    def name(self) -> str:
         return self.__name
 
     @property
@@ -32,8 +33,12 @@ class ApexUserDatabaseModel():
         return self.__uid
 
     @property
-    def platform(self) -> int:
+    def platform(self) -> str:
         return self.__platform
+
+    @property
+    def icon_url(self) -> str:
+        return self.__icon_url
 
     @property
     def database_dict(self) -> dict:
@@ -42,5 +47,6 @@ class ApexUserDatabaseModel():
             'level': self.level,
             'name': self.name,
             'uid': self.uid,
-            'platform': self.platform
+            'platform': self.platform,
+            'icon_url': self.icon_url,
         }

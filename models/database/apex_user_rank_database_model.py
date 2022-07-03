@@ -141,6 +141,8 @@ class ApexUserRankDatabaseModel(ApexUserDatabaseModel):
         embed.add_field(name='アリーナ', value=f'{self.arena_name} {self.arena_division}')
         embed.add_field(name='スコア', value=self.arena_score)
         embed.add_field(name='変動', value=self.arena_change_str)
+        if self.icon_url is not None:
+            embed.set_thumbnail(url=self.icon_url)
         return embed
 
     @property

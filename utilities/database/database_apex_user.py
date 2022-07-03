@@ -35,6 +35,11 @@ class DatabaseApexUserUrility(DatabaseUtility):
             cursor.execute(sql.UPDATE_APEX_USER_BY_NAME, apex_user.database_dict)
         self.commit()
 
+    def update_icon_url_by_uid(self, apex_user: Union[ApexUserModel, ApexUserRankModel], icon_url: str):
+        with self.connection.cursor() as cursor:
+            cursor.execute(sql.UPDATE_APEX_USER_ICON_BY_UID, {'uid': apex_user.uid, 'icon_url': icon_url})
+        self.commit()
+
     # DELETE
     def delete_by_uid(self, apex_user: Union[ApexUserModel, ApexUserRankModel, ApexUserDatabaseModel]):
         with self.connection.cursor() as cursor:

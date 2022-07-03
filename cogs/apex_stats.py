@@ -1,4 +1,4 @@
-import os
+import os, traceback, mimetypes, aiohttp
 from typing import Union
 from discord import ApplicationContext, Client, Message, SlashCommandGroup, TextChannel
 from discord.ext import tasks
@@ -154,6 +154,47 @@ class ApexStats(Cog):
             database.delete_by_uid(user)
         await context.respond(f'{user.name}({uid})のランク情報追跡を取り消しました。')
 
+    @user_command_group.command(name='set_icon', description='アイコンを設定')
+    async def apex_user_set_icon(self, context: ApplicationContext,
+                                 uid: Option(int, 'UID', required=True),
+                                 url: Option(str, 'アイコンURL', required=True)):
+        await context.defer()
+        users = self.get_registerd_users()
+        if users is None or len(users) == 0:
+            await context.respond(f'ユーザが登録されていません。先に[/apex_user add ~]を実行してください。')
+            return
+
+        regsted_uids = [user.uid for user in users]
+        is_registerd = (uid in regsted_uids)
+        if not is_registerd:
+            await context.respond(f'ユーザ({uid})が登録されていません。')
+            return
+
+        is_valid_url = await self.is_valid_image_url(url)
+        if not is_valid_url:
+            await context.respond(f'画像URLが不正です。JPEGまたはPNGの画像を指定してください。')
+            return
+
+        user = [user for user in users if user.uid == uid][0]
+        with DatabaseApexUserUrility() as database:
+            database.update_icon_url_by_uid(user, url)
+            
+        await context.respond(f'ユーザ({uid})のアイコンを設定しました。')
+
+    async def is_valid_image_url(self, url: str) -> bool:
+        """有効な画像URLか確認
+        """
+        valid_images = ['.jpg', '.jpeg', '.png']
+        try:
+            async with aiohttp.ClientSession() as session:
+                res = await session.get(url)
+                content_type = res.headers['content-type']
+                ext = mimetypes.guess_extension(content_type)
+                is_valid = content_type.startswith('image/') and (ext in valid_images)
+                return is_valid
+        except Exception as ex:
+            LogUtility.print_error(str(ex), '画像のURL解析', traceback.format_exception())
+            return False
 
     @rank_command_group.command(name='show_one', description='ランク情報を表示')
     async def apex_rank_show_one(self, context: ApplicationContext,
