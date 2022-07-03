@@ -227,7 +227,7 @@ class ApexStats(Cog):
             users = [ApexUserDatabaseModel(user) for user in users_list]
             return users
 
-    async def refresh_apex_user_rank(self, uid: int) -> Union[ApexUserRankModel, None]:
+    async def refresh_apex_user_rank(self, uid: int) -> Union[ApexUserRankModel, ApexUserRankDatabaseModel, None]:
         """データベースに登録済みの追跡対象ユーザのランク情報を取得して登録
         """
         user = None
