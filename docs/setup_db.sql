@@ -35,6 +35,7 @@ CREATE TABLE `apex_users` (
   `name` varchar(100) NOT NULL,
   `uid` bigint(20) NOT NULL,
   `platform` varchar(4) NOT NULL,
+  `icon_url` varchar(1000) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
