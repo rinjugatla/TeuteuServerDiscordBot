@@ -48,7 +48,7 @@ class ApexStats(Cog):
         try:
             users_rank = await self.refresh_apex_users_rank()
         except Exception as ex:
-            LogUtility.print_red(str(ex))
+            LogUtility.print_error(str(ex), 'update_user_ranks', traceback.format_exc())
 
         self.updating_user_ranks = False
         if users_rank is None:
