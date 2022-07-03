@@ -184,7 +184,7 @@ class ApexStats(Cog):
     async def is_valid_image_url(self, url: str) -> bool:
         """有効な画像URLか確認
         """
-        valid_images = ['.jpg', '.jpeg', '.png']
+        valid_images = ['.jpg', '.jpeg', '.png', '.webp']
         try:
             async with aiohttp.ClientSession() as session:
                 res = await session.get(url)
