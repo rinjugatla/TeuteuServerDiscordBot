@@ -18,10 +18,10 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- データベース: `teuteu_discord_server`
+-- データベース: `teuteu_discord_server_test`
 --
-CREATE DATABASE IF NOT EXISTS `teuteu_discord_server` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `teuteu_discord_server`;
+CREATE DATABASE IF NOT EXISTS `teuteu_discord_server_test` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `teuteu_discord_server_test`;
 
 -- --------------------------------------------------------
 
