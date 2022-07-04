@@ -276,7 +276,6 @@ In options.3: Required options must be placed before non-required options
                         ):
  ```
 
-
 ## 起動時に`discord.errors.HTTPException: 405 Method Not Allowed (error code: 0): 405: Method Not Allowed`エラー発生
 
 * バージョン `bb5b30df4f9bd17ddc075630881de2ef4a7fbd13`
@@ -297,3 +296,29 @@ discord.errors.HTTPException: 405 Method Not Allowed (error code: 0): 405: Metho
 
 * 対処
   pycordのバージョンを`2.0.0b7`から`2.0.0rc1`に更新
+
+## aiohttp通信した際に`Unclosed connection`が発生する
+
+* エラーメッセージ
+
+```log
+Unclosed connection
+client_connection: Connection<ConnectionKey(host='cdn.discordapp.com', port=443, is_ssl=True, ssl=None, proxy=None, proxy_auth=None, proxy_headers_hash=None)>
+```
+
+* 対処
+  aiohttpのsessionを閉じる
+
+```py
+# 修正前
+async with aiohttp.ClientSession() as session:
+  res = await session.get(url)
+  # 処理
+  return
+
+# 修正後
+async with aiohttp.ClientSession() as session:
+  async with session.get(url) as res:
+    # 処理
+    return
+```
