@@ -21,17 +21,17 @@ else:
 class ApexStats(Cog):
     def __init__(self, bot: Client):
         self.bot = bot
-        self.is_on_ready = False
+        self.is_on_ready_done = False
         self.updating_user_ranks = False
         self.prev_update_user_ranks : list[ApexUserRankDatabaseModel] = None
         self.post_channel : TextChannel = None
 
     @Cog.listener(name='on_ready')
     async def on_ready(self):
-        if not self.is_on_ready:
+        if not self.is_on_ready_done:
             self.post_channel = self.bot.get_channel(const.APEX_RANK_CHANNEL)
             self.update_user_ranks.start()
-            self.is_on_ready = True
+            self.is_on_ready_done = True
 
     @tasks.loop(minutes=2)
     async def update_user_ranks(self):
@@ -59,7 +59,7 @@ class ApexStats(Cog):
             return
 
         # 初回実行時は出力しない
-        if not self.is_on_ready:
+        if not self.is_on_ready_done:
             return
 
         embeds = [user.embed for user in changed_users_rank]
