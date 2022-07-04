@@ -96,13 +96,6 @@ class ApexStats(Cog):
 
     user_command_group = SlashCommandGroup("apex_user", "ランク情報を追跡するプレイヤの操作")
     rank_command_group = SlashCommandGroup("apex_rank", "ランク情報の操作")
-    
-    def is_valid(self, message: Message):
-        if message.author.bot:
-            return False
-        if len(message.content) == 0 or message.content[0] == const.COMMAND_PREFIX:
-            return False
-        return True
 
     @user_command_group.command(name='add', description='ランク情報追跡ユーザを追加')
     async def apex_user_add(self, context: ApplicationContext,
