@@ -22,6 +22,7 @@ class ApexStats(Cog):
     def __init__(self, bot: Client):
         self.bot = bot
         self.is_on_ready_done = False
+        self.is_first_update_user_rank_done = False
         self.updating_user_ranks = False
         self.prev_update_user_ranks : list[ApexUserRankDatabaseModel] = None
         self.post_channel : TextChannel = None
@@ -59,7 +60,8 @@ class ApexStats(Cog):
             return
 
         # 初回実行時は出力しない
-        if not self.is_on_ready_done:
+        if not self.is_first_update_user_rank_done:
+            self.is_first_update_user_rank_done = True
             return
 
         embeds = [user.embed for user in changed_users_rank]
