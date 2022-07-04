@@ -1,4 +1,4 @@
-import os, traceback, mimetypes, aiohttp
+import os, traceback, aiohttp
 from typing import Union
 from discord import ApplicationContext, Client, Message, SlashCommandGroup, TextChannel
 from discord.ext import tasks
@@ -184,14 +184,13 @@ class ApexStats(Cog):
     async def is_valid_image_url(self, url: str) -> bool:
         """有効な画像URLか確認
         """
-        valid_images = ['.jpg', '.jpeg', '.png', '.webp']
         try:
             async with aiohttp.ClientSession() as session:
-                res = await session.get(url)
-                content_type = res.headers['content-type']
-                ext = mimetypes.guess_extension(content_type)
-                is_valid = content_type.startswith('image/') and (ext in valid_images)
-                return is_valid
+                async with session.get(url) as res:
+                    content_type = res.headers['content-type']
+                    is_valid = content_type.startswith('image/')
+                    LogUtility.print_green(f'is_valid_image_url {url} {content_type} {is_valid}')
+                    return is_valid
         except Exception as ex:
             LogUtility.print_error(str(ex), '画像のURL解析', traceback.format_exception())
             return False
