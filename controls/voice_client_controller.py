@@ -1,10 +1,10 @@
-import asyncio
+import asyncio, traceback
 from typing import Union
-
 from discord import VoiceChannel, VoiceClient
 from discord.player import FFmpegPCMAudio
 from controls.audio_queue_controller import AudioQueueController
 from models.voice_client_model import VoiceClientModel
+from utilities.log import LogUtility
 
 
 class VoiceClientController(VoiceClientModel):
@@ -36,7 +36,8 @@ class VoiceClientController(VoiceClientModel):
             try:
                 filepath = await asyncio.wait_for(self.__queue_controller.get(), timeout = 100)
                 await self.play(filepath)
-            except asyncio.TimeoutError:
+            except Exception as ex:
+                LogUtility.print_error(str(ex), 'playing_task', traceback.format_exc())
                 asyncio.create_task(self.disconnect())
 
     async def play(self, filename: str):
