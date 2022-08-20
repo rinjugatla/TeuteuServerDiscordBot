@@ -166,9 +166,22 @@ class TextToSpeech(Cog):
         return validated
 
     def replace_url(self, text: str) -> str:
-        pattern = r'https?:\/\/((?P<third>\w+)\.)?(?P<second>\w+).(?P<top>\w+)\/[\w\/:%#\$&\?\(\)~\.,=\+\-]+'
-        m = re.match(pattern, text)
-        replaced = re.sub(pattern, '\g<second> URL', text)
+        pattern = r'(https?:\/\/(?P<domain>[^/]+)/[\w\/:%#\$&\?\(\)~\.,=\+\-]+)'
+        matchs = re.findall(pattern, text)
+
+        replaced = text
+        for match in matchs:
+            url = match[0]
+            domain = match[1]
+            domains = domain.split('.')
+
+            domain_count = len(domains)
+            if domain_count == 2:
+                main_domanin = domains[0]
+            else:
+                main_domanin = domains[1]
+            replaced = replaced.replace(url, f'{main_domanin} URL')
+
         return replaced
 
     def limit_text(self, text: str) -> str:
