@@ -101,25 +101,24 @@ class TextToSpeech(Cog):
         if not self.voice_controller.is_connected:
             return
 
-        text = message.content
-        filepath = self.audio_controller.load_audio(text)
+        validated_text= self.validate_text(message.guild, message.content)
+        filepath = self.audio_controller.load_audio(validated_text)
         if not filepath is None:
-            LogUtility.print_green(f'[GCP]音声データをローカルファイルから取得 {self.create_text_preview(text)}')
+            LogUtility.print_green(f'[GCP]音声データをローカルファイルから取得 {self.create_text_preview(validated_text)}')
             await self.voice_controller.append_audio(filepath)
             return
 
-        speech_data = await self.request_text_to_speech(message.guild, text)
+        speech_data = await self.request_text_to_speech(message.guild, validated_text)
         if speech_data == None:
             LogUtility.print_red('データが不正なため読み上げ終了')
             return
-        filepath = self.audio_controller.save_audio(text, speech_data)
+        filepath = self.audio_controller.save_audio(validated_text, speech_data)
         await self.voice_controller.append_audio(filepath)
 
     async def request_text_to_speech(self, guild: Guild, text: str) -> Union[bytes, None]:
         LogUtility.print_green(f'[GCP]音声データを取得 {text}')
         async with aiohttp.ClientSession() as session:
-            validated_text= self.validate_text(guild, text)
-            payload_json = self.create_payload(validated_text)
+            payload_json = self.create_payload(text)
             async with session.post(url=self.url, data=payload_json, headers=self.gcp_headers) as response:
                 if response.status != 200:
                     LogUtility.print_red(f'[GCP]音声データの取得に失敗 {response.content}')
