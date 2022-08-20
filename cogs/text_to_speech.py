@@ -24,6 +24,7 @@ class TextToSpeech(Cog):
         self.audio_controller = AudioManagementController(use_ogg=self.use_ogg)
         self.url = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize'
         self.text_limit_count = 100 # 読み上げ長さ
+        self.message_author_name_limit = 5 #　メッセージ送信者名読み上げ長さ
 
     tts_command_group = SlashCommandGroup("tts", "文字読み上げ")
 
@@ -101,7 +102,7 @@ class TextToSpeech(Cog):
         if not self.voice_controller.is_connected:
             return
 
-        validated_text= self.validate_text(message.guild, message.content)
+        validated_text = self.create_speech_text(message)
         filepath = self.audio_controller.load_audio(validated_text)
         if not filepath is None:
             LogUtility.print_green(f'[GCP]音声データをローカルファイルから取得 {self.create_text_preview(validated_text)}')
@@ -114,6 +115,18 @@ class TextToSpeech(Cog):
             return
         filepath = self.audio_controller.save_audio(validated_text, speech_data)
         await self.voice_controller.append_audio(filepath)
+
+    def create_speech_text(self, message: Message) -> str:
+        """読み上げメッセージを作成
+
+        Returns:
+            str: メッセージ発信者 + 補正済みのメッセージ
+        """
+        author = message.author.name[:self.message_author_name_limit]
+        # 名前とメッセージの間に余裕を持たせるため「。」を使用
+        text = f'{author}。{message.content}'
+        validated_text = self.validate_text(message.guild, text)
+        return validated_text
 
     async def request_text_to_speech(self, guild: Guild, text: str) -> Union[bytes, None]:
         LogUtility.print_green(f'[GCP]音声データを取得 {text}')
