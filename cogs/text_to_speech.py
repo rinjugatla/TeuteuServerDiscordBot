@@ -103,7 +103,7 @@ class TextToSpeech(Cog):
             await self.voice_controller.disconnect()
 
         # 他のBOTと同居させない
-        exists_other_bot = self.exists_bot_in_voice_channel(self.voice_controller.voice_channel)
+        exists_other_bot = self.exists_other_bot_in_voice_channel(self.voice_controller.voice_channel)
         if not exists_other_bot:
             return
 
