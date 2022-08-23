@@ -105,7 +105,7 @@ class TextToSpeech(Cog):
         validated_text = self.create_speech_text(message)
         filepath = self.audio_controller.load_audio(validated_text)
         if not filepath is None:
-            LogUtility.print_green(f'[GCP]音声データをローカルファイルから取得 {self.create_text_preview(validated_text)}')
+            LogUtility.print_green(f'[GCP]音声データをローカルファイルから取得 {self.create_preview_text(validated_text)}')
             await self.voice_controller.append_audio(filepath)
             return
 
@@ -143,7 +143,7 @@ class TextToSpeech(Cog):
                 LogUtility.print_red(f'[GCP]音声データにaudioContent要素なし {data}')
                 return None
 
-    def create_text_preview(self, text: str) -> str:
+    def create_preview_text(self, text: str) -> str:
         preview = text if len(text) < 110 else f'{text[:100]}...{text[-10:]}'
         return preview
 
