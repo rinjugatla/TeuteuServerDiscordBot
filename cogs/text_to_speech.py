@@ -4,7 +4,7 @@ import os, json, aiohttp, base64, re
 from controls.audio_management_contoller import AudioManagementController
 from controls.voice_client_controller import VoiceClientController
 from utilities.log import LogUtility
-from discord import ApplicationContext, Client, Guild, Member, Message, SlashCommandGroup, VoiceState
+from discord import ApplicationContext, Client, Guild, Member, Message, SlashCommandGroup, VoiceState, TextChannel, VoiceChannel
 from discord.ext import  tasks
 from discord.ext.commands import Cog
 if os.path.exists('pro.mode'):
@@ -20,6 +20,7 @@ class TextToSpeech(Cog):
         self.bot = bot
         self.is_on_ready = False
         self.use_ogg = True
+        self.enter_text_channel : TextChannel = None # 接続コマンドを実行したチャンネル
         self.voice_controller = None
         self.audio_controller = AudioManagementController(use_ogg=self.use_ogg)
         self.url = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize'
@@ -74,14 +75,22 @@ class TextToSpeech(Cog):
         if self.voice_controller.is_connected:
             await context.respond('すでにVCに参加済みです。')
             return
+
+        voice_channel = context.author.voice.channel
+        exists_other_bot = self.exists_other_bot_in_voice_channel(voice_channel)
+        if exists_other_bot:
+            await context.respond('すでに他のBOTが参加済みです。')
+            return
         
-        voice_client = await context.author.voice.channel.connect()
+        voice_client = await voice_channel.connect()
         self.voice_controller.update(voice_client)
+        self.enter_text_channel = context.channel
         await context.respond('ボイスチャンネルに接続しました。')
 
     @tts_command_group.command(name='disconnect', description='ボイスチャンネルから切断')
     async def command_disconnect(self, context: ApplicationContext):
         await self.voice_controller.disconnect()
+        self.enter_text_channel = None
         await context.respond('ボイスチャンネルから切断しました。')
 
     @Cog.listener(name='on_voice_state_update')
@@ -90,7 +99,30 @@ class TextToSpeech(Cog):
         if count is None:
             return
         if count == 1:
+            self.enter_text_channel = None
             await self.voice_controller.disconnect()
+
+        # 他のBOTと同居させない
+        exists_other_bot = self.exists_other_bot_in_voice_channel(self.voice_controller.voice_channel)
+        if not exists_other_bot:
+            return
+
+        await self.enter_text_channel.send('他のBOTが参加したためボイスチャンネルから切断しました。')
+        self.enter_text_channel = None
+        await self.voice_controller.disconnect()
+
+    def exists_other_bot_in_voice_channel(self, channel: VoiceChannel) -> bool:
+        """ボイスチャンネルに他のBOTが接続済みか
+
+        Args:
+            channel (VoiceChannel): ボイスチャンネル
+        """
+        for member in channel.members:
+            if member.id == self.bot.user.id:
+                continue
+            if member.bot:
+                return True
+        return False
 
     @Cog.listener(name='on_message')
     async def on_message(self, message: Message):
