@@ -210,7 +210,7 @@ class TextToSpeech(Cog):
         return validated
 
     def replace_url(self, text: str) -> str:
-        pattern = r'(https?:\/\/(?P<domain>[^/]+)/[\w\/:%#\$&\?\(\)~\.,=\+\-]+)'
+        pattern = r'(https?:\/\/(?P<domain>[^/]+)/[\w\/:%#\$&\?\(\)~\.,=\+\-]*)'
         matchs = re.findall(pattern, text)
 
         replaced = text
