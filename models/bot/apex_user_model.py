@@ -7,6 +7,8 @@ class ApexUserModel():
         if data_global is None:
             return
 
+        # シーズン毎のレベルが導入されたため、シーズンパスを導入している場合は全シーズンのレベルを参照する必要があるかもしれない
+        # legends > selected or charaname > gameInfo > badges > Account Level
         self.__level = data_global['level'] if 'level' in data_global else -1
         self.__name = data_global['name'] if 'name' in data_global else ''
         self.__uid = data_global['uid'] if 'uid' in data_global else -1
