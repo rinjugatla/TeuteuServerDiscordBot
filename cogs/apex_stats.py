@@ -97,13 +97,19 @@ class ApexStats(Cog):
     @user_command_group.command(name='add', description='ランク情報追跡ユーザを追加')
     async def apex_user_add(self, context: ApplicationContext,
                             platform: Option(str, 'プラットフォーム名', choices=['PC', 'PS4', 'X1', 'SWITCH'], default='PC', required=True),
-                            uid: Option(int, 'UID', required=False),
+                            uid: Option(str, 'UID', required=False),
                             name: Option(str, 'アカウント名', required=False)):
         await context.defer()
         if uid is None and name is None:
             await context.respond('uidまたはnameを指定してください。')
             return
+        if uid is not None and not str.isdigit(uid):
+            await context.respond(f'UIDは数値で指定してください。')
+            return
+        
         try:
+            # PS4のuidが長すぎてpycordのOptionでは扱えないためstrで取得する
+            uid_int = int(uid)
             user = await self.rank_utility.regist_apex_user(uid, name, platform)
         except Exception as ex: 
             await context.respond(str(ex))
@@ -144,7 +150,7 @@ class ApexStats(Cog):
 
     @user_command_group.command(name='set_icon', description='アイコンを設定')
     async def apex_user_set_icon(self, context: ApplicationContext,
-                                 uid: Option(int, 'UID', required=True),
+                                 uid: Option(str, 'UID', required=True),
                                  url: Option(str, 'アイコンURL', required=True)):
         await context.defer()
 
@@ -152,10 +158,15 @@ class ApexStats(Cog):
         if not is_valid_url:
             await context.respond(f'画像URLが不正です。JPEGまたはPNGの画像を指定してください。')
             return
+        if not str.isdigit(uid):
+            await context.respond(f'UIDは数値で指定してください。')
+            return
 
         user = None
         try:
-            user = await self.rank_utility.get_apex_user(uid)
+            # PS4のuidが長すぎてpycordのOptionでは扱えないためstrで取得する
+            uid_int = int(uid)
+            user = await self.rank_utility.get_apex_user(uid_int)
         except Exception as ex:
             await context.respond(str(ex))
             return
@@ -163,7 +174,7 @@ class ApexStats(Cog):
         with DatabaseApexUserUrility() as database:
             database.update_icon_url_by_uid(user, url)
             
-        await context.respond(f'ユーザ({uid})のアイコンを設定しました。')
+        await context.respond(f'{user.name}({user.uid})のアイコンを設定しました。')
 
     async def is_valid_image_url(self, url: str) -> bool:
         """有効な画像URLか確認
