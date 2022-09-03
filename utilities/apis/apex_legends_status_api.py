@@ -1,5 +1,7 @@
 import os, aiohttp, json
+import traceback
 from models.bot.apex_user_rank_model import ApexUserRankModel
+from utilities.log import LogUtility
 if os.path.exists('pro.mode'):
     import secret.secret_pro as secret
     import secret.const_pro as const
@@ -43,15 +45,19 @@ class ApexLegendsStatusAPI():
                 'Content-Type': 'application/json;',
                 'Authorization': secret.APEX_TOKEN
             }
-            async with session.post(url=url, headers=headers) as response:
-                if response.status != 200:
-                    return None
+            try:
+                async with session.post(url=url, headers=headers) as response:
+                    if response.status != 200:
+                        return None
 
-                # header: Content-Type: text/plain;charset=UTF-8なのでresponse.json()は利用不可
-                data = json.loads(await response.text())
-                if 'Error' in data:
-                    # 存在しないユーザを指定した場合などに発生
-                    raise ValueError(data['Error'])
+                    # header: Content-Type: text/plain;charset=UTF-8なのでresponse.json()は利用不可
+                    data = json.loads(await response.text())
+                    if 'Error' in data:
+                        # 存在しないユーザを指定した場合などに発生
+                        raise ValueError(data['Error'])
 
-                user = ApexUserRankModel(data)
-                return user
+                    user = ApexUserRankModel(data)
+                    return user
+            except Exception as ex:
+                LogUtility.print_error(str(ex), '__get_user', traceback.format_exc())
+                return None
