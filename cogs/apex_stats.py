@@ -18,6 +18,7 @@ class ApexStats(Cog):
     def __init__(self, bot: Client):
         self.bot = bot
         self.is_on_ready_done = False
+        self.updating_user_info = False
         self.updating_user_ranks = False
         self.is_first_update_user_rank_done = False
         self.rank_utility = ApexUserRankUtility()
@@ -27,8 +28,29 @@ class ApexStats(Cog):
     async def on_ready(self):
         if not self.is_on_ready_done:
             self.post_channel = self.bot.get_channel(const.APEX_RANK_CHANNEL)
+            self.update_user_info.start()
             self.update_user_ranks.start()
             self.is_on_ready_done = True
+
+    @tasks.loop(hours=12)
+    async def update_user_info(self):
+        """一定時間毎にユーザの基本情報を更新
+        """
+        # 多重実行回避
+        if self.updating_user_info:
+            return
+
+        LogUtility.print_green('ユーザの基本情報の定期取得を開始します。')
+        self.updating_user_info = True
+
+        users = None
+        with DatabaseApexUserUrility() as database:
+            users = database.select_users()
+        if users is None or len(users) == 0:
+            return
+
+        await self.rank_utility.update_apex_users(users)
+        self.updating_user_info = False
 
     @tasks.loop(minutes=2)
     async def update_user_ranks(self):

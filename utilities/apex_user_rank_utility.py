@@ -71,6 +71,41 @@ class ApexUserRankUtility():
             database.update_by_uid(user)
             return user
 
+    async def update_apex_user(self, user: dict):
+        """ユーザ情報を更新
+
+        Args:
+            user (dict): 古いユーザ情報
+        """
+        if user is None or 'uid' not in user or 'platform' not in user:
+            return
+        latest_user = await ApexLegendsStatusAPI.get_user_by_uid(user['uid'], user['platform'])
+        with DatabaseApexUserUrility() as database:
+            database.update_by_uid(latest_user)
+
+    async def update_apex_users(self, users: list[dict]):
+        """複数のユーザの情報を更新
+
+        Args:
+            users (list[dict]): 古いユーザ情報
+        """
+        if users is None or len(users) == 0:
+            return
+
+        latest_users = []
+        for user in users:
+            if user is None or 'uid' not in user or 'platform' not in user:
+                continue
+
+            latest_user = await ApexLegendsStatusAPI.get_user_by_uid(user['uid'], user['platform'])
+            if latest_user is None:
+                continue
+            latest_users.append(latest_user)
+        
+        with DatabaseApexUserUrility() as database:
+            for latest_user in latest_users:
+                database.update_by_uid(latest_user)
+
     def get_registerd_users(self) -> list[ApexUserDatabaseModel]:
         """データベースに登録済みのユーザ情報を取得
         """
