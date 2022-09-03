@@ -4,13 +4,8 @@ from discord import ApplicationContext, Client, Message, SlashCommandGroup, Text
 from discord.ext import tasks
 from discord.commands import Option
 from discord.ext.commands import Cog
-from models.bot.apex_user_rank_model import ApexUserRankModel
-from models.database.apex_user_database_model import ApexUserDatabaseModel
-from models.database.apex_user_rank_database_model import ApexUserRankDatabaseModel
 from utilities.apex_user_rank_utility import ApexUserRankUtility
-from utilities.apis.apex_legends_status_api import ApexLegendsStatusAPI
 from utilities.database.database_apex_user import DatabaseApexUserUrility
-from utilities.database.database_apex_user_rank import DatabaseApexUserRankUrility
 from utilities.log import LogUtility
 if os.path.exists('pro.mode'):
     import secret.secret_pro as secret

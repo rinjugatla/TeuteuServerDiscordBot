@@ -1,6 +1,4 @@
 import asyncio
-from itertools import count
-from typing import Union
 
 
 class AudioQueueModel(asyncio.Queue):
