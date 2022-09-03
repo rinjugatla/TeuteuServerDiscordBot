@@ -98,9 +98,11 @@ class TextToSpeech(Cog):
         count = self.voice_controller.member_count
         if count is None:
             return
-        if count == 1:
+        is_onyl_self = count == 1
+        if is_onyl_self:
             self.enter_text_channel = None
             await self.voice_controller.disconnect()
+            return
 
         # 他のBOTと同居させない
         exists_other_bot = self.exists_other_bot_in_voice_channel(self.voice_controller.voice_channel)
@@ -117,6 +119,9 @@ class TextToSpeech(Cog):
         Args:
             channel (VoiceChannel): ボイスチャンネル
         """
+        if channel is None:
+            return False
+
         for member in channel.members:
             if member.id == self.bot.user.id:
                 continue
