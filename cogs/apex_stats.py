@@ -109,8 +109,8 @@ class ApexStats(Cog):
         
         try:
             # PS4のuidが長すぎてpycordのOptionでは扱えないためstrで取得する
-            uid_int = int(uid)
-            user = await self.rank_utility.regist_apex_user(uid, name, platform)
+            uid_int = int(uid) if uid is not None and str.isdigit(uid) else None
+            user = await self.rank_utility.regist_apex_user(uid_int, name, platform)
         except Exception as ex: 
             await context.respond(str(ex))
             return
