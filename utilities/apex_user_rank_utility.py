@@ -58,9 +58,9 @@ class ApexUserRankUtility():
         
         user = None
         try:
-            if not uid is None:
+            if uid is not None:
                 user = await ApexLegendsStatusAPI.get_user_by_uid(uid, platform)
-            elif not name is None:
+            elif name is not None:
                 user = await ApexLegendsStatusAPI.get_user_by_name(name, platform)
         except:
             raise
