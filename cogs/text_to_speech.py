@@ -25,7 +25,7 @@ class TextToSpeech(Cog):
         self.audio_controller = AudioManagementController(use_ogg=self.use_ogg)
         self.url = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize'
         self.text_limit_count = 100 # 読み上げ長さ
-        self.message_author_name_limit = 5 #　メッセージ送信者名読み上げ長さ
+        self.message_author_name_limit = 6 #　メッセージ送信者名読み上げ長さ
 
     tts_command_group = SlashCommandGroup("tts", "文字読み上げ")
 
