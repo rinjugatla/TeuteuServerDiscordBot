@@ -166,6 +166,8 @@ class TextToSpeech(Cog):
         return validated_text
 
     async def request_text_to_speech(self, guild: Guild, text: str) -> Union[bytes, None]:
+        """GCPのTTSサービスでテキストをオーディオに変換
+        """
         LogUtility.print_green(f'[GCP]音声データを取得 {text}')
         async with aiohttp.ClientSession() as session:
             payload_json = self.create_payload(text)
@@ -203,7 +205,7 @@ class TextToSpeech(Cog):
         return json.dumps(payload, ensure_ascii=False)
 
     def validate_text(self, guild: Guild, text: str) -> str:
-        """URlやメンションを
+        """URlやメンションを置き換え
         """
         validated = self.replace_url(text)
         validated = self.limit_text(validated)
@@ -215,6 +217,11 @@ class TextToSpeech(Cog):
         return validated
 
     def replace_url(self, text: str) -> str:
+        """URLを補正
+
+           http://aaa.bbb/         から aaa URLに修正
+           http://aaa.bbb.ccc/hoge から bbb URLに修正
+        """
         pattern = r'(https?:\/\/(?P<domain>[^/]+)/[\w\/:%#\$&\?\(\)~\.,=\+\-]*)'
         matchs = re.findall(pattern, text)
 
