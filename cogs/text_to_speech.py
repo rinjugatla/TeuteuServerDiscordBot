@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Union
 import google.auth, google.auth.transport.requests
 import os, json, aiohttp, base64, re
@@ -26,6 +27,9 @@ class TextToSpeech(Cog):
         self.url = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize'
         self.text_limit_count = 100 # 読み上げ長さ
         self.message_author_name_limit = 6 #　メッセージ送信者名読み上げ長さ
+        self.last_speech_interval_sec = 60 * 3 # メッセージ読み上げに送信者名を付与しない時間
+        self.last_speech_datetime = datetime.now()
+        self.last_speech_author = ""
 
     tts_command_group = SlashCommandGroup("tts", "文字読み上げ")
 
@@ -91,6 +95,7 @@ class TextToSpeech(Cog):
     async def command_disconnect(self, context: ApplicationContext):
         await self.voice_controller.disconnect()
         self.enter_text_channel = None
+        self.init_last_speech_author()
         await context.respond('ボイスチャンネルから切断しました。')
 
     @Cog.listener(name='on_voice_state_update')
@@ -139,7 +144,8 @@ class TextToSpeech(Cog):
         if not self.voice_controller.is_connected:
             return
 
-        validated_text = self.create_speech_text(message)
+        author = self.get_speech_author(message)
+        validated_text, use_author = self.create_speech_text(message, author)
         filepath = self.audio_controller.load_audio(validated_text)
         if not filepath is None:
             LogUtility.print_green(f'[GCP]音声データをローカルファイルから取得 {self.create_preview_text(validated_text)}')
@@ -150,20 +156,53 @@ class TextToSpeech(Cog):
         if speech_data == None:
             LogUtility.print_red('データが不正なため読み上げ終了')
             return
+        
+        if use_author:
+            self.store_last_speech_author(author)
+        
         filepath = self.audio_controller.save_audio(validated_text, speech_data)
         await self.voice_controller.append_audio(filepath)
 
-    def create_speech_text(self, message: Message) -> str:
+    def create_speech_text(self, message: Message, author: str) -> tuple[str, bool]:
         """読み上げメッセージを作成
+           前回の発言者と同じ発言者の場合は発言者名をメッセージに含めない
+
+        Args:
+            message (Message): メッセージ
+            author (str): メッセージの発言者(補正済み)
 
         Returns:
-            str: メッセージ発信者 + 補正済みのメッセージ
+            str: 補正済みのメッセージ
         """
-        author = message.author.name[:self.message_author_name_limit]
-        # 名前とメッセージの間に余裕を持たせるため「。」を使用
-        text = f'{author}。{message.content}'
+        same_author = self.last_speech_author == author
+        is_over_interval = (datetime.now() - self.last_speech_datetime).seconds > self.last_speech_interval_sec
+        use_author = not same_author or is_over_interval
+
+        if use_author:
+            # 名前とメッセージの間に余裕を持たせるため「。」を使用
+            text = f'{author}。{message.content}'
+        else:
+            text = message.content
+            
         validated_text = self.validate_text(message.guild, text)
-        return validated_text
+        return (validated_text, use_author)
+
+    def get_speech_author(self, message: Message) -> str:
+        """テキストを送ったユーザ名を補正して取得
+        """
+        if message is None:
+            return None
+        author = message.author.name[:self.message_author_name_limit]
+        return author
+
+    def store_last_speech_author(self, author: str):
+        if author is not None:
+            self.last_speech_datetime = datetime.now()
+            self.last_speech_author = author
+    
+    def init_last_speech_author(self):
+        self.last_speech_datetime = datetime.now()
+        self.last_speech_author = ""
 
     async def request_text_to_speech(self, guild: Guild, text: str) -> Union[bytes, None]:
         """GCPのTTSサービスでテキストをオーディオに変換
