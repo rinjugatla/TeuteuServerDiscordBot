@@ -24,44 +24,22 @@ class TextToSpeech(Cog):
         self.enter_text_channel : TextChannel = None # 接続コマンドを実行したチャンネル
         self.voice_controller = None
         self.audio_controller = AudioManagementController(use_ogg=self.use_ogg)
-        self.url = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize'
+        self.audio_query_url = 'http://localhost:50021/audio_query'
+        self.synthesis_url = 'http://localhost:50021/synthesis'
         self.text_limit_count = 100 # 読み上げ長さ
         self.message_author_name_limit = 6 #　メッセージ送信者名読み上げ長さ
         self.last_speech_interval_sec = 60 * 3 # メッセージ読み上げに送信者名を付与しない時間
         self.last_speech_datetime = datetime.now()
         self.last_speech_author = ""
+        self.speaker_id = 1 # idはhttp://localhost:50021/speakersを参照
 
     tts_command_group = SlashCommandGroup("tts", "文字読み上げ")
 
     @Cog.listener(name='on_ready')
     async def on_ready(self):
         if not self.is_on_ready:
-            self.update_gcp_info.start()
             self.voice_controller = VoiceClientController()
             self.is_on_ready = True
-
-    @tasks.loop(minutes=30)
-    async def update_gcp_info(self):
-        """n分毎にGCPアクセストークンを更新
-        """
-        self.gcp_token = self.get_gcp_token()
-        self.gcp_headers = {
-            'Authorization': f"Bearer {self.gcp_token}",
-            'X-Goog-User-Project': const.GCP_PROJECT,
-            'Content-Type': 'application/json; charset=utf-8',
-        }
-        LogUtility.print('GCPトークン更新完了')
-
-    def get_gcp_token(self):
-        """GCPアクセストークン取得
-        
-        あらかじめ環境変数`GOOGLE_APPLICATION_CREDENTIALS`に認証情報ファイルを設定すること
-        """
-        creds, project = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
-        auth_req = google.auth.transport.requests.Request()
-        creds.refresh(auth_req)
-        token = creds.token
-        return token
 
     def is_valid(self, message: Message):
         if message.author.bot:
@@ -148,12 +126,12 @@ class TextToSpeech(Cog):
         validated_text, use_author = self.create_speech_text(message, author)
         filepath = self.audio_controller.load_audio(validated_text)
         if not filepath is None:
-            LogUtility.print_green(f'[GCP]音声データをローカルファイルから取得 {self.create_preview_text(validated_text)}')
+            LogUtility.print_green(f'[VOICEVOX]音声データをローカルファイルから取得 {self.create_preview_text(validated_text)}')
             await self.voice_controller.append_audio(filepath)
             return
 
         speech_data = await self.request_text_to_speech(message.guild, validated_text)
-        if speech_data == None:
+        if speech_data is None:
             LogUtility.print_red('データが不正なため読み上げ終了')
             return
         
@@ -211,38 +189,48 @@ class TextToSpeech(Cog):
     async def request_text_to_speech(self, guild: Guild, text: str) -> Union[bytes, None]:
         """GCPのTTSサービスでテキストをオーディオに変換
         """
-        LogUtility.print_green(f'[GCP]音声データを取得 {text}')
+        LogUtility.print_green(f'[VOICEVOX]音声データを取得 {text}')
+        query = await self.request_audio_query(text)
+        if query is None:
+            return
+
+        audio_data = await self.request_synthesis(query)
+        return audio_data
+
+    async def request_audio_query(self, text: str) -> str:
+        """音声合成用のクエリを作成
+
+        Args:
+            text (str): 解析文字列
+
+        Returns:
+            str: 音声合成用データ(json)
+        """
         async with aiohttp.ClientSession() as session:
-            payload_json = self.create_payload(text)
-            async with session.post(url=self.url, data=payload_json, headers=self.gcp_headers) as response:
+            params = {
+                "text": text,
+                "speaker": self.speaker_id
+            }
+            async with session.post(url=self.audio_query_url, params=params) as response:
                 if response.status != 200:
-                    LogUtility.print_red(f'[GCP]音声データの取得に失敗 {response.content}')
+                    LogUtility.print_red(f'[VOICEVOX]音声データの取得に失敗 {response.content}')
                     return None
 
-                data = await response.json()
-                if 'audioContent' in data:
-                    return base64.b64decode(data['audioContent'])
-                LogUtility.print_red(f'[GCP]音声データにaudioContent要素なし {data}')
-                return None
+                query = await response.json()
+                return query
 
-
-    def create_payload(self, text: str, speed: float = 1.0, pitch: float = 0) -> str:
-        payload = {
-            "audioConfig": {
-                "audioEncoding": "OGG_OPUS" if self.use_ogg else "LINEAR16",
-                "pitch": pitch,
-                "speakingRate": speed
-            },
-            "input": {
-                "text": text
-            },
-            "voice": {
-                "languageCode": "ja-JP",
-                "name": "ja-JP-Wavenet-B"
+    async def request_synthesis(self, query_json: str) -> bytes:
+        async with aiohttp.ClientSession() as session:
+            params = {
+                "speaker": self.speaker_id
             }
-        }
+            async with session.post(url=self.synthesis_url, params=params, json=query_json) as response:
+                if response.status != 200:
+                    LogUtility.print_red(f'[VOICEVOX]音声データの取得に失敗 {response.content}')
+                    return None
 
-        return json.dumps(payload, ensure_ascii=False)
+                audio = await response.read()
+                return audio
 
     def validate_text(self, guild: Guild, text: str) -> str:
         """URlやメンションを置き換え
