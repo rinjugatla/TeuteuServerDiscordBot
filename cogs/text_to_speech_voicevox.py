@@ -163,6 +163,10 @@ class TextToSpeech(Cog):
         filepath = self.audio_controller.save_audio(validated_text, speech_data)
         await self.voice_controller.append_audio(filepath)
 
+    def create_preview_text(self, text: str) -> str:
+        preview = text if len(text) < 110 else f'{text[:100]}...{text[-10:]}'
+        return preview
+
     def create_speech_text(self, message: Message, author: str) -> tuple[str, bool]:
         """読み上げメッセージを作成
            前回の発言者と同じ発言者の場合は発言者名をメッセージに含めない
@@ -221,9 +225,6 @@ class TextToSpeech(Cog):
                 LogUtility.print_red(f'[GCP]音声データにaudioContent要素なし {data}')
                 return None
 
-    def create_preview_text(self, text: str) -> str:
-        preview = text if len(text) < 110 else f'{text[:100]}...{text[-10:]}'
-        return preview
 
     def create_payload(self, text: str, speed: float = 1.0, pitch: float = 0) -> str:
         payload = {
