@@ -7,6 +7,7 @@ from controls.voice_client_controller import VoiceClientController
 from utilities.log import LogUtility
 from discord import ApplicationContext, Client, Guild, Member, Message, SlashCommandGroup, VoiceState, TextChannel, VoiceChannel
 from discord.ext import  tasks
+from discord.commands import Option
 from discord.ext.commands import Cog
 if os.path.exists('pro.mode'):
     import secret.secret_pro as secret
@@ -75,6 +76,16 @@ class TextToSpeech(Cog):
         self.enter_text_channel = None
         self.init_last_speech_author()
         await context.respond('ボイスチャンネルから切断しました。')
+
+    @tts_command_group.command(name='change_speaker', description='ボイスを変更')
+    async def command_disconnect(self, context: ApplicationContext, 
+        id: Option(int, 'ID', required=True)):
+        await context.defer()
+        if id is None or not(0 < id < 39):
+            await context.respond('idは0~38の整数で指定してください。')
+        
+        await context.respond(f'ボイス{self.speaker_id}から{id}に変更しました。')
+        self.speaker_id = id
 
     @Cog.listener(name='on_voice_state_update')
     async def on_voice_state_update(self, member: Member, before: VoiceState, after: VoiceState):
