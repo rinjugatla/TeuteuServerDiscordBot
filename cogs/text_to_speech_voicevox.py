@@ -81,7 +81,7 @@ class TextToSpeech(Cog):
     async def command_disconnect(self, context: ApplicationContext, 
         id: Option(int, 'ID', required=True)):
         await context.defer()
-        if id is None or not(0 < id < 39):
+        if id is None or not(0 <= id <= 38):
             await context.respond('idは0~38の整数で指定してください。')
         
         await context.respond(f'ボイス{self.speaker_id}から{id}に変更しました。')
